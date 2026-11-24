@@ -3,17 +3,14 @@
   "name": "naditwin",
   "builds": [
     {
-      "src": "run.py",
-      "use": "@vercel/python"
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "run.py"
+      "dest": "/public/index.html"
     }
-  ],
-  "env": {
-    "PYTHONUNBUFFERED": "1"
-  }
+  ]
 }
