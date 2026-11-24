@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIVER EYE — Mula-Mutha · Mithi · Mandovi Digital Twin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --obs:#1f77b4; --fc:#7e57c2; --bed:#8d6e63; --crest:#37474f;
+    --danger:#c62828; --warn:#ef6c00; --watch:#f9a825; --safe:#2e7d32;
+    --bg:#f4f6f8; --card:#ffffff; --ink:#1a2733; --muted:#5f6b76;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:#0b3556;color:#fff;padding:14px 22px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:22px;letter-spacing:.5px}
+  header .sub{opacity:.8;font-size:13px}
+  .wrap{max-width:1280px;margin:0 auto;padding:18px 22px;display:grid;
+        grid-template-columns:2fr 1fr;gap:16px}
+  .card{background:var(--card);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);
+        padding:14px 16px}
+  .card h2{margin:0 0 8px;font-size:15px;color:#0b3556}
+  .full{grid-column:1/-1}
+  .row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .stat{background:#eef3f8;border-radius:8px;padding:8px 14px;font-size:13px}
+  .stat b{font-size:17px;display:block;color:#0b3556}
+  .river-sel select{padding:6px 10px;border-radius:6px;border:1.5px solid #0b3556;
+                     font-size:13px;color:#0b3556;font-weight:600;cursor:pointer}
+  .river-sel{display:flex;align-items:center;gap:8px}
+  .river-sel label{font-size:12px;color:var(--muted)}
+  .stepper{display:flex;align-items:center;gap:0;border:2px solid #0b3556;border-radius:8px;overflow:hidden}
+  .stepper label{background:#eef3f8;padding:6px 10px;font-size:12px;color:#0b3556;font-weight:600;white-space:nowrap;border-right:1px solid #c7d0d9}
+  .stepper button{border-radius:0;padding:6px 14px;font-size:18px;line-height:1;background:#0b3556;border:none}
+  .stepper button:hover{background:#124a77}
+  .stepper input[type=number]{width:62px;border:none;border-left:1px solid #c7d0d9;
+         border-right:1px solid #c7d0d9;padding:6px 4px;font-size:14px;font-weight:700;
+         text-align:center;color:#0b3556;outline:none;-moz-appearance:textfield}
+  .stepper input[type=number]::-webkit-inner-spin-button,
+  .stepper input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .legend{font-size:12px;color:var(--muted);margin-top:4px}
+  .legend span{display:inline-block;margin-right:14px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  input[type=range]{width:100%}
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:820px){.board{grid-template-columns:repeat(2,1fr)}}
+  .asset{border-radius:8px;padding:10px;color:#fff;font-size:12.5px}
+  .asset b{font-size:14px;display:block;margin-bottom:2px}
+  .asset .m{font-size:20px;font-weight:700}
+  .DANGER{background:var(--danger)} .WARNING{background:var(--warn)}
+  .WATCH{background:var(--watch);color:#3a2f00} .SAFE{background:var(--safe)}
+  .upl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+  .upl input[type=file]{font-size:12px;max-width:210px}
+  .upl input[type=text]{padding:5px 8px;border:1px solid #c7d0d9;border-radius:6px;font-size:12px;width:150px}
+  .qtable{max-height:330px;overflow:auto;margin-top:10px}
+  .qtable table{font-size:12px}
+  .qtable th{position:sticky;top:0;background:#eef3f8}
+  .qtable td.num,.qtable th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .zchip{display:inline-block;border-radius:9px;padding:0 7px;font-size:11px;font-weight:700;color:#fff}
+  .btnlike{display:inline-block;background:#eef3f8;border:1px solid #c7d0d9;color:#0b3556;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;text-decoration:none;font-weight:600}
+  .btnlike:hover{background:#dde7f1}
+  .tog{background:#eef3f8;color:#0b3556;border:1px solid #c7d0d9;padding:4px 10px;font-size:12px;border-radius:0}
+  .tog.on{background:#0b3556;color:#fff}
+  .asset{cursor:pointer} .asset.sel{outline:3px solid #0b3556;outline-offset:2px}
+  .loc-label{background:rgba(11,53,86,.85)!important;color:#fff!important;border:none!important;font-size:11px!important;font-weight:700;padding:1px 5px!important}
+  .loc-label::before{display:none!important}
+  .terrain{font-size:12px;color:#37474f;background:#f6f8fa;border-radius:6px;padding:6px 10px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{padding:6px 8px;border-bottom:1px solid #e3e8ee;text-align:left}
+  th{color:#0b3556}
+  button{background:#0b3556;color:#fff;border:0;border-radius:6px;padding:8px 14px;
+         font-size:13px;cursor:pointer}
+  button:hover{background:#124a77}
+  select{padding:6px;border-radius:6px;border:1px solid #c7d0d9;font-size:13px}
+  .note{font-size:11.5px;color:var(--muted);margin-top:6px}
+  #nochart{display:none;padding:20px;color:var(--danger);font-weight:600}
+  canvas{max-height:340px}
+  #map{height:380px;border-radius:8px}
+  .maplegend{font-size:12px;color:var(--muted);margin-top:6px;display:flex;flex-wrap:nowrap;align-items:center;gap:6px 14px;overflow-x:auto;white-space:nowrap}
+  .maplegend span{display:inline-flex;align-items:center;gap:4px;margin-right:0;flex-shrink:0}
+  .swatch{display:inline-block;width:18px;height:3px;margin-right:5px;vertical-align:2px}
+  /* refresh / auto-advance bar */
+  .refresh-bar{display:flex;align-items:center;gap:14px;padding:6px 14px;
+               background:#f0f4f8;border-radius:6px;font-size:12px;color:#37474f;flex-wrap:wrap}
+  .refresh-bar b{color:#0b3556}
+  .refresh-bar select{padding:3px 8px;border-radius:5px;border:1px solid #c7d0d9;font-size:12px}
+  /* auto-advance pill */
+  .aa-pill{display:flex;align-items:center;gap:6px;background:#e8f0fe;
+           border:1px solid #b3c6f7;border-radius:20px;padding:3px 10px;font-size:12px;color:#1a3a7a}
+  .aa-pill select{background:transparent;border:none;font-size:12px;color:#1a3a7a;
+                  font-weight:600;padding:0 2px;outline:none;cursor:pointer}
+  .aa-pill.off{background:#f0f4f8;border-color:#c7d0d9;color:var(--muted)}
+  .mode-pill{display:flex;align-items:center;gap:6px;background:#e6f6ea;border:1px solid #8fd4a3;
+             border-radius:20px;padding:4px 12px;font-size:12px;color:#1b5e20;cursor:pointer;user-select:none}
+  .mode-pill.off{background:#f0f4f8;border-color:#c7d0d9;color:var(--muted)}
+  .mode-pill.off .pulse{display:none}
+  #histPickers input,#histPickers select{padding:4px 8px;border-radius:5px;border:1px solid #c7d0d9;font-size:12px}
+  .lm-table{max-height:220px;overflow-y:auto}
+  .lm-badge{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}
+  .lm-badge.bridge{background:#e3edfb;color:#0b3556}
+  .lm-badge.confluence{background:#fdecea;color:#c62828}
+  .lm-badge.locality{background:#eef3f8;color:#5f6b76}
+  .lm-badge.auto{opacity:.65}
+  /* sim-clock highlight when auto-advancing */
+  .advancing b{color:#1565c0!important;animation:clockTick .4s ease}
+  @keyframes clockTick{0%{opacity:.3}100%{opacity:1}}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;
+         background:#43a047;margin-right:4px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  /* loading overlay */
+  #loadOverlay{position:fixed;inset:0;background:#f0f4f8;display:flex;
+               flex-direction:column;align-items:center;justify-content:center;
+               z-index:9999;transition:opacity .4s}
+  #loadOverlay.done{opacity:0;pointer-events:none}
+  .spinner{width:48px;height:48px;border:5px solid #c7d0d9;
+           border-top-color:#0b3556;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loadMsg{margin-top:16px;font-size:14px;color:#0b3556;font-weight:600}
+  .leaflet-div-icon{background:transparent!important;border:none!important}
+  .chainage-label{background:rgba(0,0,0,.55)!important;border:none!important;color:#ffe000!important;
+    font-size:10px!important;font-weight:700;padding:0 3px!important;box-shadow:none!important}
+  .chainage-label::before{display:none!important}
+  /* river buttons (Mula-Mutha / Mithi / Mandovi / uploads) */
+  .rtabs{display:flex;gap:10px;flex-wrap:wrap}
+  .rtab{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#eef3f8;color:#0b3556;
+        border:2px solid #c7d0d9;border-radius:10px;padding:8px 14px;cursor:pointer;min-width:170px;text-align:left}
+  .rtab:hover{background:#dde7f1;border-color:#0b3556}
+  .rtab.on{background:#0b3556;color:#fff;border-color:#0b3556}
+  .rtab .rn{font-size:15px;font-weight:700}
+  .rtab .rc{font-size:11.5px;opacity:.8}
+  .rtab .rs{font-size:11px;opacity:.85}
+  .rtab.loading{opacity:.6;cursor:progress}
+  .rcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px;text-align:left}
+  .rcard{background:#f6f9fc;border:2px solid #c7d0d9;border-radius:12px;padding:16px;cursor:pointer}
+  .rcard:hover{border-color:#0b3556;background:#eef3f8}
+  .rcard b{font-size:17px;color:#0b3556;display:block}
+  .rcard .rc{font-size:12px;color:var(--muted);margin:2px 0 8px}
+  .rcard .chips span{display:inline-block;background:#e3edfb;color:#0b3556;border-radius:9px;padding:1px 8px;font-size:11px;font-weight:600;margin:2px 4px 2px 0}
+  .rinfo{margin-top:12px;border-top:1px solid #e3e8ee;padding-top:10px;font-size:12.5px;color:#37474f}
+  .rinfo .srcf{display:inline-block;background:#f0f4f8;border:1px solid #d6dee6;border-radius:6px;padding:1px 7px;margin:2px 4px 2px 0;font-size:11.5px}
+  .rinfo .srcf i{font-style:normal;color:var(--muted);margin-right:3px}
+  .eplist{max-height:270px;overflow:auto;border:1px solid #e3e8ee;border-radius:8px;margin-top:6px}
+  .eplist table{font-size:12px}
+  .eplist td{padding:4px 8px;vertical-align:top}
+  .eplist a{color:#0b5cab;text-decoration:none;font-family:Consolas,'SFMono-Regular',monospace;word-break:break-all}
+  .eplist a:hover{text-decoration:underline}
+  .mchip{display:inline-block;border-radius:5px;padding:0 6px;font-size:10.5px;font-weight:700;color:#fff;background:#2e7d32}
+  .mchip.POST{background:#ef6c00}
+  .cpy{background:#eef3f8;color:#0b3556;border:1px solid #c7d0d9;padding:1px 8px;font-size:11px;border-radius:5px}
+  .cpy:hover{background:#dde7f1}
+  details.upbox summary{cursor:pointer;font-size:12.5px;color:#0b3556;font-weight:600;margin-top:12px}
+</style>
+</head>
+<body>
+<div id="loadOverlay">
+  <div class="spinner"></div>
+  <div id="loadMsg">Loading NadiTwin…</div>
+</div>
+<header>
+  <h1>RIVER EYE</h1>
+  <div class="sub" id="headsub">River Intelligence</div>
+</header>
+<div id="srvWarn" style="display:none;background:#fdecea;color:#b71c1c;border-bottom:2px solid #c62828;padding:10px 22px;font-size:13px;font-weight:600"></div>
+
+<!-- ── river picker: click Mula-Mutha / Mithi / Mandovi (built from Digital _twin_kml) or an uploaded river ── -->
+<div class="wrap" style="padding-bottom:0">
+  <div class="card full">
+    <h2 style="margin-bottom:10px">River <span style="font-weight:400;color:var(--muted);font-size:12px">— click a river to open its digital twin</span></h2>
+    <div class="rtabs" id="riverTabs"><span class="note">Loading rivers…</span></div>
+
+    <!-- shown once a river is open: source files, direct link and every API endpoint for that river -->
+    <div class="rinfo" id="riverInfo" style="display:none">
+      <div class="row" style="gap:8px;align-items:center">
+        <span><b id="riSrcLbl">Source files</b>:</span>
+        <span id="riFiles"></span>
+        <button class="cpy" id="riRebuild" onclick="rebuildRiver()" title="Re-read the KMLs + locations Excel from the folder and rebuild this river">⟳ Rebuild from folder</button>
+      </div>
+      <div class="note" id="riBuilt" style="margin-top:2px"></div>
+      <div class="row" style="gap:8px;align-items:center;margin-top:8px">
+        <span><b>Direct link</b>:</span>
+        <a id="riLink" href="#" target="_blank" rel="noopener" style="font-family:Consolas,monospace;color:#0b5cab"></a>
+        <button class="cpy" onclick="_copyText($('riLink').href,this)">Copy</button>
+      </div>
+      <details id="epBox" open style="margin-top:8px">
+        <summary style="cursor:pointer;font-weight:600;color:#0b3556">API endpoints for <span id="epRiver">–</span> (<span id="epCount">0</span>)</summary>
+        <div class="eplist" id="epList"></div>
+      </details>
+    </div>
+
+    <details class="upbox" id="upBox">
+      <summary>＋ Add another river (upload KMLs) · set locations for the open river</summary>
+      <div class="row" style="gap:14px;align-items:flex-end;margin-top:10px">
+        <div class="upl"><span>1 · River polygon KML <b>(required)</b></span><input type="file" id="kmlFile" accept=".kml"></div>
+        <div class="upl"><span>2 · Chainage KML (optional, e.g. every 10 m)</span><input type="file" id="chainFile" accept=".kml"></div>
+        <div class="upl"><span>3 · Water-depth KML (optional)</span><input type="file" id="depthFile" accept=".kml"></div>
+        <div class="upl"><span>4 · Locations Excel (optional)</span><input type="file" id="locFile" accept=".xlsx,.csv"></div>
+        <div class="upl"><span>River name</span><input type="text" id="riverName" placeholder="from polygon file name"></div>
+        <button onclick="uploadKml()" style="padding:7px 16px">Run</button>
+        <div class="upl" style="margin-left:auto"><span>Locations for the open river</span>
+          <label class="btnlike">Set locations (Excel)…<input type="file" id="locOnly" accept=".xlsx,.csv" style="display:none" onchange="uploadLocationsOnly()"></label></div>
+      </div>
+    </details>
+    <div class="note" id="uploadNote"></div>
+  </div>
+</div>
+
+<div class="wrap" id="blankState">
+  <div class="card full" style="text-align:center;padding:40px 20px">
+    <div style="font-size:16px;font-weight:700;color:#0b3556;margin-bottom:6px">Choose a river</div>
+    <div class="note" style="font-size:13px">Each river is built from its folder in <b>Digital _twin_kml</b> (river KML, chainage KML, water-depth KML, locations Excel). Click one to open its digital twin.</div>
+    <div class="rcards" id="riverCards"></div>
+  </div>
+</div>
+
+
+<div id="mainContent" style="display:none">
+
+<div class="wrap" style="padding-bottom:0">
+  <div class="card full">
+    <h2 id="reachTitle">Reach location (traced from KML, real polygon + extracted centerline)</h2>
+    <div id="map"></div>
+    <div class="maplegend">
+      <span><span class="swatch" style="background:#2dc0fb"></span>Traced river polygon</span>
+      <span><span class="swatch" style="background:#ffee58"></span>Centerline / chainage</span>
+      <span><svg width="14" height="14"><circle cx="7" cy="7" r="2.5" fill="#ffe000"/></svg>Chainage (1 km)</span>
+      <span><svg width="14" height="14"><circle cx="7" cy="7" r="1.4" fill="#ff8f00"/></svg>Chainage (100 m)</span>
+      <span>
+        <button id="chNoToggle" onclick="toggleChainageNos()"
+          style="border:1px solid #ffd600;background:#fff9d6;color:#7a6400;border-radius:12px;
+                 padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer">Chainage no.: ON</button>
+      </span>
+      <span>
+        <button id="ch100Toggle" onclick="toggleChainage100()"
+          style="border:1px solid #ffb300;background:#fff3e0;color:#8a5400;border-radius:12px;
+                 padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer">100 m ticks: ON</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card full">
+
+    <!-- ── live / historic time-control bar ── -->
+    <div class="refresh-bar" style="margin-bottom:10px">
+      <span class="mode-pill" id="modeLive" onclick="setMode('live')">
+        <span class="pulse"></span><b>Live</b>
+      </span>
+      <span class="mode-pill off" id="modeHist" onclick="setMode('historic')">
+        🕐 <b>Historic</b>
+      </span>
+
+      <span id="histPickers" style="display:none;align-items:center;gap:8px">
+        <input type="date" id="histDate" onchange="onHistChange()">
+        <select id="histHour" onchange="onHistChange()"></select>
+      </span>
+
+      <span>Simulation clock: <b id="simClock">–</b></span>
+      <span id="liveNote" style="color:var(--muted)">auto-refreshing every 1 min</span>
+
+      <div class="stepper">
+        <label>Manual step</label>
+        <button onclick="stepHistoric(-1)" title="Step back">−</button>
+        <input type="number" id="stepHours" value="1" min="1" max="24">
+        <button onclick="stepHistoric(1)" title="Step forward">+</button>
+      </div>
+    </div>
+
+    <!-- stats + chainage segment selector (drives stage, hydrograph, discharge) -->
+    <div class="row">
+      <div class="stat">Discharge now (upstream → outlet)<b id="qnow">–</b></div>
+      <div class="stat">Data<b id="livebadge">–</b></div>
+      <div class="stat">Reach<b id="reachstat">–</b></div>
+      <div class="stat">Ensemble<b>50 members · 72 h forecast</b></div>
+      <div class="river-sel">
+        <label id="segSelLbl">Location (stretch)</label>
+        <select id="segSel" onchange="onSegSelChange(true)"></select>
+      </div>
+    </div>
+    <div class="note" id="locInfo" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card full">
+    <h2>Live rainfall, weather &amp; chainage-wise discharge <span style="font-weight:400;color:var(--muted);font-size:12px" id="liveSrcLbl"></span></h2>
+    <div class="row" id="weatherRow" style="gap:10px"></div>
+    <div class="note" id="liveNote2" style="margin-top:6px"></div>
+    <div class="terrain" id="terrainNote"></div>
+    <h3 style="margin:14px 0 4px;font-size:14px;color:#0b3556">Discharge at every chainage (10 m) — <span id="q10Lbl">–</span></h3>
+    <div class="row" style="gap:10px;margin-bottom:4px">
+      <a id="xlsArea" class="btnlike" href="#" download>⬇ Excel — this location</a>
+      <a id="xlsAll" class="btnlike" href="#" download>⬇ Excel — all locations</a>
+      <span class="note" id="q10Info" style="margin:0"></span>
+    </div>
+    <canvas id="qProfile"></canvas>
+    <div class="legend">
+      <span><span class="dot" style="background:#1f77b4"></span>Q now</span>
+      <span><span class="dot" style="background:#7e57c2"></span>Q +24 h (median)</span>
+      <span><span class="dot" style="background:#d32f2f"></span>Q +72 h (median)</span>
+      <span><span class="dot" style="background:#90caf9"></span>Rain now (mm/h, right axis)</span>
+    </div>
+    <div class="note">Every 10 m: Q = inflow to that km (routed with a flow-dependent travel time) + the share of that km's storm runoff (rain × runoff coefficient, which rises as the ground gets wet and falls with high ET0) + urban dry-weather inflow (STP outfalls / nallas, daily cycle) − open-water evaporation, added up to that chainage. Upstream boundary = GloFAS discharge; forecast spread from the GloFAS ensemble. Dam releases are not modelled.</div>
+    <div class="qtable" id="qTable"></div>
+    <div class="note"><b>Columns:</b> <b>Water depth</b> = river stage − river bed (m). <b>River stage (water level)</b> = water surface elevation (m WSE, from the DEM datum). <b>Danger level</b> = bank crest − 0.8 m freeboard (m WSE). <b>Margin below danger</b> = danger level − river stage: how many metres the water can still rise before DANGER (SAFE &gt; 1.7 m · WATCH ≤ 1.7 · WARNING ≤ 0.7 · DANGER ≤ 0).</div>
+  </div>
+
+  <div class="card full">
+    <h2>River stage (water level) — <span id="profileSegLbl">–</span></h2>
+    <div id="nochart">Chart.js failed to load (offline?). APIs still work at /api/*.</div>
+    <div class="row" id="stageStats" style="gap:10px;margin-bottom:8px"></div>
+    <canvas id="profile"></canvas>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--obs)"></span>River stage now = water surface (m WSE)</span>
+      <span><span class="dot" style="background:var(--bed)"></span>River bed (from the depth KML)</span>
+      <span><span class="dot" style="background:var(--watch)"></span>Watch level</span>
+      <span><span class="dot" style="background:var(--warn)"></span>Warning level</span>
+      <span><span class="dot" style="background:var(--danger)"></span>Danger level (bank crest − 0.8 m)</span>
+      <span><span class="dot" style="background:var(--crest)"></span>Bank crest</span>
+    </div>
+    <div class="note">Stage is the water surface elevation in metres (m WSE). Water depth = stage − bed. The 72 h forecast of the stage is in the hydrograph below.</div>
+  </div>
+
+  <div class="card full">
+    <h2>Hydrograph (discharge + river stage + rainfall) at <span id="hydroPointLbl">–</span></h2>
+    <div class="row" style="gap:10px;margin-bottom:6px">
+      <div class="river-sel"><label>Window</label>
+        <select id="hydroWin" onchange="drawHydro()">
+          <option value="72">past 72 h + 72 h forecast</option>
+          <option value="168">past 7 days + 72 h forecast</option>
+          <option value="720">past 30 days + 72 h forecast</option>
+          <option value="2160">past 90 days + 72 h forecast</option>
+          <option value="8760">past 1 year + 72 h forecast</option>
+          <option value="all" id="hydroAllOpt">all history since 1 Jan 2021 + 72 h forecast</option>
+          <optgroup label="Year (1 Jan – 31 Dec)" id="hydroYears"></optgroup>
+        </select></div>
+      <span class="note" id="hydroInfo" style="margin:0"></span>
+    </div>
+    <div class="row" id="hydroYear" style="gap:10px;margin-bottom:8px;display:none"></div>
+    <canvas id="hydro"></canvas>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--obs)"></span>Stage observed</span>
+      <span><span class="dot" style="background:var(--fc)"></span>Stage forecast median (P10–P90 band)</span>
+      <span><span class="dot" style="background:#00897b"></span>Discharge (right axis)</span>
+      <span><span class="dot" style="background:#64b5f6"></span>Rain mm (bars from top)</span>
+      <span><span class="dot" style="background:var(--watch)"></span>Watch level</span>
+      <span><span class="dot" style="background:var(--warn)"></span>Warning level</span>
+      <span><span class="dot" style="background:var(--danger)"></span>Danger level (crest − 0.8 m)</span>
+    </div>
+  </div>
+
+  <div class="card full">
+    <h2>Rating curve (stage ↔ discharge) at <span id="ratingLbl">–</span></h2>
+    <canvas id="rating"></canvas>
+    <div class="note" id="ratingInfo"></div>
+  </div>
+
+  <div class="card full">
+    <h2>Margin board — <span id="boardTitle">by location</span> <span style="font-weight:400;color:var(--muted);font-size:12px" id="boardAt"></span>
+      <span style="float:right;font-weight:400"><button id="bmLoc" class="tog" onclick="setBoardMode('loc')">By location</button><button id="bmKm" class="tog" onclick="setBoardMode('km')">Every 1 km</button></span></h2>
+    <div class="board" id="board"></div>
+    <div class="note" id="zoneNote">Margin = danger level (bank crest − 0.8 m) − river stage, at the most vulnerable station of each km. <span class="zchip SAFE">SAFE</span> margin &gt; 1.7 m · <span class="zchip WATCH">WATCH</span> ≤ 1.7 m · <span class="zchip WARNING">WARNING</span> ≤ 0.7 m · <span class="zchip DANGER">DANGER</span> ≤ 0 m — status = worst of the current margin, the 72 h median-forecast margin and the 72 h exceedance probability (≥10% watch, ≥30% warning, ≥60% danger). Map segments are coloured the same way.</div>
+  </div>
+</div>
+
+</div><!-- /mainContent -->
+
+<script>
+const GOOGLE_MAPS_API_KEY = "";
+
+let META=null, profileChart=null, hydroChart=null, ratingChart=null, q10Chart=null, ACTIVE_RIVER=null, _leafletMap=null, _zoneLayer=null, _locLayer=null, _selLayer=null;
+let BOARD_MODE="loc";      // "loc" = one card per location area (localities Excel), "km" = one per 1 km of chainage
+const ZONE_COL={SAFE:"#2e7d32",WATCH:"#f9a825",WARNING:"#ef6c00",DANGER:"#c62828"};
+let _liveTimer=null;
+let _chainageMarkers=[], _chainageNoVisible=true;
+let _chainage100Markers=[], _chainage100Visible=true;
+let MODE="live";        // "live" | "historic"
+let HIST_AT=null;        // ISO8601 UTC string, set when MODE==="historic"
+let FUTURE_OFFSET_H=0;   // hours ahead of real "now" being previewed while
+                          // still in Live mode (manual step forward) — does
+                          // NOT touch HIST_AT or the Historic date/hour picker
+
+// ── helpers ──────────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+// Every river-scoped request remembers which river click it belongs to (RIVER_GEN). If the user has clicked another
+// river before the answer arrives, the answer is dropped (StaleResponse) so the previous river's locations/stretches
+// can never be drawn under the newly selected river.
+let RIVER_GEN=0, SERVER_ID=null;
+class StaleResponse extends Error{}
+window.addEventListener("unhandledrejection",e=>{ if(e.reason instanceof StaleResponse) e.preventDefault(); });
+async function j(u,opt){
+  const gen=RIVER_GEN, scoped=/[?&]river=/.test(u);
+  const r=await fetch(u,Object.assign({cache:"no-store"},opt||{}));
+  _checkServer(r, u);
+  const d=await r.json();
+  if(scoped && gen!==RIVER_GEN) throw new StaleResponse("river changed while loading");
+  if(!r.ok && d && d.error) throw new Error(d.error);
+  return d;
+}
+// two servers on one port (an old window still running) answer requests at random -> warn loudly
+function _checkServer(r, u){
+  if(!u.startsWith("/api/")) return;
+  const id=r.headers.get("X-NadiTwin-Server");
+  if(!id){ _serverWarn("An OLD NadiTwin server is still running on this port and answered a request. It shows Mula-Mutha for every river. Close every old server window (or end the old python.exe in Task Manager), then run  python run.py  once."); return; }
+  if(SERVER_ID && id!==SERVER_ID){ _serverWarn("Two NadiTwin servers are answering on this port. Close all server windows, then run  python run.py  once."); }
+  SERVER_ID=SERVER_ID||id;
+}
+function _serverWarn(msg){
+  const el=$("srvWarn"); if(!el||el.dataset.shown) return;
+  el.dataset.shown="1"; el.textContent="⚠ "+msg; el.style.display="block";
+}
+function decimate(arr,step){const o=[];for(let i=0;i<arr.length;i+=step)o.push(arr[i]);return o;}
+const STEP=4;
+function decimateAdaptive(arr,target){
+  target=target||80;
+  const step=Math.max(1,Math.floor(arr.length/target));
+  return decimate(arr,step);
+}
+
+// ── chainage-wise (2 km) segment selector (drives stage, hydrograph, discharge) ──
+// Replaces the old per-bridge/"area" selector: the reach is cut into fixed
+// 2 km chainage segments (last segment may be shorter), independent of
+// where any bridge/landmark happens to sit — works the same way for every
+// river, built-in or freshly uploaded via KML.
+const SEG_STEP_KM=1;
+let SEGMENTS=[];
+
+function _hasLoc(){ return !!(META&&META.locations&&META.locations.length); }
+function _buildSegments(){
+  // location areas from the localities Excel (Sangam ... Manjari); without one, the server's 1 km segments
+  const chKm=META.chainage_km, n=chKm.length;
+  if(_hasLoc()){
+    return META.locations.map((L,k)=>({id:L.id, name:L.name, loc:L, i0:L.i0, i1:L.i1, midIdx:L.cell, chainage_m:META.chainage_km[L.cell]*1000,
+      label:L.name}));
+  }
+  const b=META.seg_bounds_km||[[0,chKm[n-1]]];
+  return b.map(([a,e],k)=>{
+    let i0=chKm.findIndex(v=>v>=a-1e-9); if(i0<0)i0=0;
+    let i1=i0; for(let i=i0;i<n;i++){ if(chKm[i]<=e+1e-9) i1=i; else break; }
+    if(i1<=i0)i1=Math.min(n-1,i0+1);
+    const mid=(META.seg_mid_cell&&META.seg_mid_cell[k]!=null)?META.seg_mid_cell[k]:Math.floor((i0+i1)/2);
+    return {id:"S"+(k+1), label:`${a.toFixed(1)}\u2013${e.toFixed(1)} km`+(k===b.length-1?" (end)":""),
+            i0, i1, midIdx:mid, chainage_m:chKm[mid]*1000};
+  });
+}
+function _segIdx(){
+  const v=$("segSel").value;
+  if(v==="all")return -1;
+  const idx=parseInt(v);
+  return (isNaN(idx)||idx<0||idx>=SEGMENTS.length)?0:idx;
+}
+function _segmentLabel(idx){
+  if(idx===-1){
+    const n=META.chainage_km.length;
+    if(_hasLoc()){
+      const P=META.location_points||[];
+      const span=P.length>1?` (${P[0].name} \u2192 ${P[P.length-1].name})`:"";
+      return `All locations${span}`;
+    }
+    return `All (0.0\u2013${META.chainage_km[n-1].toFixed(1)} km)`;
+  }
+  return SEGMENTS[idx].label;
+}
+function _segmentCellRange(idx){
+  if(idx===-1)return [0, META.chainage_km.length-1];
+  return [SEGMENTS[idx].i0, SEGMENTS[idx].i1];
+}
+// representative single station for point-in-time charts (Hydrograph,
+// Discharge-today) that can't show a chainage RANGE the way River stage
+// can — "All" falls back to the whole reach's mid-chainage station.
+let CRIT_CELL={};   // segment index -> most vulnerable station, as chosen by the margin board
+let CRIT_ALL=null;  // {cell, name, label}: the most vulnerable station of the WHOLE river (lowest margin on the board)
+function _segmentCell(idx){
+  if(idx===-1)return (CRIT_ALL&&CRIT_ALL.cell!=null)?CRIT_ALL.cell:Math.floor((META.chainage_km.length-1)/2);
+  return (CRIT_CELL[idx]!=null)?CRIT_CELL[idx]:SEGMENTS[idx].midIdx;
+}
+// same synthetic-threshold formula the backend uses for bridge/locality
+// assets (crest − 0.8 m) — applied here to the segment's representative
+// (mid-chainage) cell, so the hydrograph still has a reference line.
+function _segmentThreshold(idx){
+  const cell=_segmentCell(idx);
+  return Math.round((META.crest[cell]-0.8)*100)/100;
+}
+function onSegSelChange(fromUser){
+  _showLocInfo();
+  _highlightSelection(!!fromUser);
+  drawProfile();
+  drawHydro();
+  drawRating();
+  drawQ10();
+  if(fromUser) _markBoardSel();
+}
+function selectArea(k){
+  $("segSel").value=String(k);
+  onSegSelChange(true);
+}
+function _showLocInfo(){
+  const idx=_segIdx(), el=$("locInfo"); if(!el)return;
+  if(idx<0&&_hasLoc()){
+    const P=META.location_points||[], n=META.chainage_label.length;
+    const far=P.filter(p=>p.far_from_river).map(p=>`⚠ ${p.name}: Excel point is ${(p.snap_distance_m/1000).toFixed(1)} km from the river (snapped to ${p.label})`);
+    el.innerHTML=`<b>All ${P.length} locations</b> along the river: `+P.map(p=>`${p.name} <span style="color:var(--muted)">(${p.label})</span>`).join(" → ")+
+      ` · chainage ${META.chainage_label[0]} → ${META.chainage_label[n-1]} · ${META.locations.length} stretches · `+
+      `<span style="color:var(--muted)">pick one stretch above, on the map or on the margin board to zoom in</span>`+
+      (far.length?` · <span style="color:#c62828">${far.join(" · ")}</span>`:"");
+    return;
+  }
+  if(idx<0||!SEGMENTS[idx]||!SEGMENTS[idx].loc){ el.textContent=_hasLoc()?"":"No locations Excel for this river yet — showing 1 km segments. Use \"Set locations (Excel)\" above."; return; }
+  const L=SEGMENTS[idx].loc, P=META.location_points||[];
+  const warn=[L.from_point,L.to_point].filter(k=>k!=null&&P[k]&&P[k].far_from_river)
+    .map(k=>`⚠ ${P[k].name}: Excel point is ${(P[k].snap_distance_m/1000).toFixed(1)} km from the river (snapped to ${P[k].label})`);
+  el.innerHTML=`<b>${L.name}</b>: chainage ${L.from_label} → ${L.to_label} · ${((L.to_m-L.from_m)/1000).toFixed(2)} km · ${L.n_chainages} chainage points`+
+    (warn.length?` · <span style="color:#c62828">${warn.join(" · ")}</span>`:"");
+}
+function _cellsOf(idx){ const [a,b]=_segmentCellRange(idx); return [a,b]; }
+function _highlightSelection(zoom){
+  if(!_selLayer||typeof L==="undefined")return;
+  _selLayer.clearLayers();
+  const idx=_segIdx();
+  if(idx<0){
+    if(zoom&&_leafletMap){
+      const all=META.lat.map((v,i)=>[v,META.lon[i]]);
+      _leafletMap.fitBounds(L.latLngBounds(all),{padding:[30,30]});
+    }
+    return;
+  }
+  const [a,b]=_cellsOf(idx);
+  const pts=[]; for(let i=a;i<=b;i++)pts.push([META.lat[i],META.lon[i]]);
+  L.polyline(pts,{color:"#ffffff",weight:13,opacity:.9}).addTo(_selLayer);
+  _selLayer.bringToBack();
+  if(zoom&&_leafletMap) _leafletMap.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:16});
+}
+// query-string fragment for the currently selected time — appended to every API call
+function atParam(){
+  if(HIST_AT&&MODE==="historic") return "&at="+encodeURIComponent(HIST_AT);
+  if(MODE==="live"&&FUTURE_OFFSET_H>0){
+    const d=new Date(Date.now()+FUTURE_OFFSET_H*3600000);
+    return "&at="+encodeURIComponent(d.toISOString().replace(/\.\d{3}Z$/,"Z"));
+  }
+  return "";
+}
+function riverParam(amp){return ACTIVE_RIVER?(amp?"&":"?")+"river="+encodeURIComponent(ACTIVE_RIVER):(amp?"":"?");}
+// minutes EAST of UTC for this browser (IST => +330) — lets the Today panel's
+// calendar day / "now" hour match the viewer's wall clock instead of always UTC
+function tzParam(){return "&tz="+(-new Date().getTimezoneOffset());}
+
+// ── simulation clock (ticks every second; live=real local clock, historic=selected hour) ──
+// Shown in the browser's local time zone, same as the Today chart's hour
+// axis. While previewing forward (FUTURE_OFFSET_H>0) it shows that future
+// instant, not real "now" — Live mode itself is never left for a forward step.
+function _tickSimClock(){
+  const el=$("simClock");
+  if(!el)return;
+  if(MODE==="live"){
+    if(FUTURE_OFFSET_H>0){
+      const d=new Date(Date.now()+FUTURE_OFFSET_H*3600000);
+      el.textContent=d.toLocaleString()+" (preview +"+FUTURE_OFFSET_H+"h)";
+    }else{
+      el.textContent=new Date().toLocaleString()+" (live)";
+    }
+  }else if(HIST_AT){
+    el.textContent=new Date(HIST_AT).toLocaleString()+" (historic)";
+  }
+}
+setInterval(_tickSimClock,1000);
+
+// ── live / historic mode ────────────────────────────────────────────────
+function setMode(mode){
+  MODE=mode;
+  FUTURE_OFFSET_H=0;
+  $("modeLive").className="mode-pill"+(mode==="live"?"":" off");
+  $("modeHist").className="mode-pill"+(mode==="historic"?"":" off");
+  $("histPickers").style.display=mode==="historic"?"flex":"none";
+  $("liveNote").style.display=mode==="live"?"inline":"none";
+  if(mode==="live"){
+    HIST_AT=null;
+    startLiveTimer();
+  }else{
+    stopLiveTimer();
+    if(!HIST_AT) onHistChange();
+  }
+  refreshAll();
+}
+
+function onHistChange(){
+  const d=$("histDate").value, h=$("histHour").value;
+  if(!d||h==="")return;
+  HIST_AT=`${d}T${h.padStart(2,"0")}:00:00Z`;
+  refreshAll();
+}
+
+// manual step: back always drops into Historic at a fixed past hour (as
+// before). Forward, while still Live, only nudges FUTURE_OFFSET_H — it
+// previews the coming hours (forecast) without switching to Historic mode
+// or touching the Historic date/hour picker; it keeps auto-refreshing every
+// minute, riding along with real time (now + offset) the same as true Live.
+function stepHistoric(direction){
+  const stepH=parseInt($("stepHours").value)||1;
+
+  if(MODE==="live"){
+    if(direction>0){
+      FUTURE_OFFSET_H+=stepH;
+      refreshAll();
+      return;
+    }
+    if(FUTURE_OFFSET_H>0){
+      FUTURE_OFFSET_H=Math.max(0, FUTURE_OFFSET_H-stepH);
+      refreshAll();
+      return;
+    }
+    // FUTURE_OFFSET_H is already 0 and stepping further back — this is
+    // where we genuinely leave Live and drop into Historic below.
+  }
+
+  let base;
+  if(MODE==="historic"&&HIST_AT){
+    base=new Date(HIST_AT);
+  }else{
+    base=new Date();   // was live — step relative to right now
+  }
+  base.setUTCHours(base.getUTCHours()+stepH*direction);
+  const yyyy=base.getUTCFullYear(), mm=String(base.getUTCMonth()+1).padStart(2,"0"), dd=String(base.getUTCDate()).padStart(2,"0");
+  const hh=base.getUTCHours();
+  const minDate=META?META.epoch_date:"2021-01-01";
+  const maxDate=META?META.today_date:yyyy+"-"+mm+"-"+dd;
+  let dateStr=`${yyyy}-${mm}-${dd}`;
+  if(dateStr<minDate)dateStr=minDate;
+  if(dateStr>maxDate)dateStr=maxDate;
+  MODE="historic";
+  FUTURE_OFFSET_H=0;
+  $("modeLive").className="mode-pill off";
+  $("modeHist").className="mode-pill";
+  $("histPickers").style.display="flex";
+  $("liveNote").style.display="none";
+  stopLiveTimer();
+  $("histDate").value=dateStr;
+  _populateHistPickers();
+  const cappedHour=Math.min(hh,parseInt($("histHour").options[$("histHour").options.length-1]?.value||"23"));
+  $("histHour").value=String(cappedHour);
+  HIST_AT=`${dateStr}T${String(cappedHour).padStart(2,"0")}:00:00Z`;
+  refreshAll();
+}
+
+function startLiveTimer(){
+  stopLiveTimer();
+  // "live" = minute-level: re-poll every 60s so discharge/stage/hydrograph/
+  // margins all move forward automatically, everywhere, without a
+  // page reload.
+  _liveTimer=setInterval(()=>{ if(MODE==="live") refreshAll(); }, 60000);
+}
+function stopLiveTimer(){ if(_liveTimer){clearInterval(_liveTimer); _liveTimer=null;} }
+
+function _populateHistPickers(){
+  if($("hydroYears")&&META.epoch_date&&META.today_date){
+    const y0=+META.epoch_date.slice(0,4), y1=+META.today_date.slice(0,4), sel=$("hydroWin").value;
+    let html="";
+    for(let y=y0;y<=y1;y++) html+=`<option value="y${y}">Year ${y}${y===y1?" (1 Jan – today + 72 h forecast)":""}</option>`;
+    $("hydroYears").innerHTML=html;
+    if(sel) $("hydroWin").value=sel;
+    if(!$("hydroWin").value) $("hydroWin").value="72";
+  }
+  if($("hydroAllOpt")&&META.epoch_date){
+    const d=new Date(META.epoch_date+"T00:00:00Z");
+    $("hydroAllOpt").textContent="all history since "+d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"})+" + 72 h forecast";
+  }
+  const dInput=$("histDate");
+  dInput.min=META.epoch_date; dInput.max=META.today_date;
+  if(!dInput.value) dInput.value=META.today_date;
+  const hSel=$("histHour");
+  const cur=hSel.value;
+  hSel.innerHTML="";
+  for(let h=0;h<=23;h++){
+    const opt=document.createElement("option");
+    opt.value=String(h); opt.textContent=String(h).padStart(2,"0")+":00";
+    hSel.appendChild(opt);
+  }
+  hSel.value=cur||"0";
+}
+
+// ── KML upload ───────────────────────────────────────────────────────────
+// Deep link back to a specific uploaded river's data — opens straight into
+// that river (via the ?river= handling in init()) instead of the blank picker.
+function _riverLink(name){
+  return location.origin+location.pathname+"?river="+encodeURIComponent(name);
+}
+async function _copyText(text, btn){
+  try{
+    await navigator.clipboard.writeText(text);
+    const old=btn.textContent; btn.textContent="Copied!";
+    setTimeout(()=>{btn.textContent=old;},1500);
+  }catch(_){
+    prompt("Copy this link:", text);
+  }
+}
+async function uploadKml(){
+  const f=$("kmlFile").files[0], fc=$("chainFile").files[0], fd=$("depthFile").files[0], fl=$("locFile").files[0];
+  const note=$("uploadNote");
+  if(!f && !fc){note.textContent="Choose at least the river polygon KML.";note.style.color="var(--danger)";return;}
+  const nm=($("riverName").value||"").trim()||((f||fc).name.replace(/\.kml$/i,"").replace(/[_-]+/g," ").trim())||"Uploaded river";
+  note.style.color="var(--muted)";
+  note.textContent="Running "+[f,fc,fd].filter(Boolean).map(x=>x.name).join(" + ")+" … building chainage, checking flow direction on the DEM"+(fd?", decoding the depth image":"")+", then fetching live rain / GloFAS (first time can take ~30–60 s)…";
+  try{
+    const body={name:nm, polygon:f?await f.text():null, chainage:fc?await fc.text():null, depth:fd?await fd.text():null,
+                localities:fl?{filename:fl.name, data_b64:await _b64(fl)}:null};
+    const r=await fetch("/api/upload_kml?name="+encodeURIComponent(nm),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok||d.error){note.textContent="Run failed: "+(d.error||r.status);note.style.color="var(--danger)";return;}
+    note.innerHTML="";
+    const summary=document.createElement("div");
+    summary.style.color="#1b5e20";
+    summary.textContent=`Loaded "${d.display_name}" — ${d.reach_km} km, ${d.n_stations} stations @ ${d.chainage_step_m} m (${d.chainage_source}); width: ${d.width_source}; depth: ${d.has_depth?"from depth KML":"Manning (no depth KML)"}; live feed: ${d.live_mode}.`;
+    note.appendChild(summary);
+    if(d.notes&&d.notes.length){
+      const ul=document.createElement("ul"); ul.style.margin="4px 0 0 18px";
+      d.notes.forEach(t=>{const li=document.createElement("li");li.textContent=t;ul.appendChild(li);});
+      note.appendChild(ul);
+    }
+    const linkRow=document.createElement("div");
+    linkRow.style.cssText="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
+    const linkLabel=document.createElement("span");
+    linkLabel.textContent="Direct link to this river:";
+    const a=document.createElement("a");
+    a.href=_riverLink(d.display_name); a.target="_blank"; a.rel="noopener"; a.textContent=a.href;
+    const copyBtn=document.createElement("button");
+    copyBtn.textContent="Copy link"; copyBtn.style.padding="4px 10px";
+    copyBtn.onclick=()=>_copyText(a.href, copyBtn);
+    linkRow.appendChild(linkLabel); linkRow.appendChild(a); linkRow.appendChild(copyBtn);
+    note.appendChild(linkRow);
+    ACTIVE_RIVER=d.display_name;
+    await _fillRiverPick();
+    await switchRiver(ACTIVE_RIVER);
+  }catch(e){
+    note.textContent="Run failed: "+e.message; note.style.color="var(--danger)";
+  }
+}
+
+async function _b64(file){
+  const buf=new Uint8Array(await file.arrayBuffer()); let bin="";
+  for(let i=0;i<buf.length;i+=0x8000) bin+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+async function uploadLocationsOnly(){
+  const f=$("locOnly").files[0], note=$("uploadNote");
+  if(!f)return;
+  if(!ACTIVE_RIVER){note.textContent="Open a river first, then set its locations.";note.style.color="var(--danger)";return;}
+  note.style.color="var(--muted)"; note.textContent="Reading "+f.name+" …";
+  try{
+    const r=await fetch("/api/upload_localities?river="+encodeURIComponent(ACTIVE_RIVER),{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({filename:f.name,data_b64:await _b64(f)})});
+    const d=await r.json();
+    if(!r.ok||d.error){note.textContent="Locations failed: "+(d.error||r.status);note.style.color="var(--danger)";return;}
+    note.style.color="#1b5e20";
+    note.textContent=`${d.locations.length} locations set for ${d.river}: `+d.locations.map(L=>`${L.name} (${(L.from_m/1000).toFixed(2)}–${(L.to_m/1000).toFixed(2)} km)`).join(", ");
+    $("locOnly").value="";
+    await switchRiver(ACTIVE_RIVER);
+  }catch(e){ note.textContent="Locations failed: "+e.message; note.style.color="var(--danger)"; }
+}
+let RIVERS=[];
+function _esc(t){return String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function _fillRiverPick(){
+  try{ RIVERS=await j("/api/rivers"); }catch(_){ RIVERS=[]; }
+  _renderRiverTabs();
+}
+function _renderRiverTabs(){
+  const tabs=$("riverTabs"), cards=$("riverCards");
+  if(!RIVERS.length){ tabs.innerHTML='<span class="note">No rivers loaded — check the Digital _twin_kml folder, or upload a KML below.</span>'; if(cards)cards.innerHTML=""; return; }
+  tabs.innerHTML=RIVERS.map((r,i)=>
+    `<button class="rtab${r.name===ACTIVE_RIVER?" on":""}" data-i="${i}" onclick="pickRiver(RIVERS[${i}].name)" title="${_esc(r.product||r.name)}">`+
+    `<span class="rn">${_esc(r.name)}</span>`+
+    `<span class="rc">${_esc(r.city||(r.uploaded?"uploaded KML":""))}</span>`+
+    `<span class="rs">${r.reach_km} km · ${r.n_stations} chainages${r.n_locations?` · ${r.n_locations} locations`:""}${r.has_depth?" · depth":""}</span></button>`).join("");
+  if(cards) cards.innerHTML=RIVERS.map((r,i)=>
+    `<div class="rcard" onclick="pickRiver(RIVERS[${i}].name)">`+
+    `<b>${_esc(r.name)}</b><div class="rc">${_esc(r.city||"uploaded KML")}${r.source_folder?` · ${_esc(r.source_folder)}`:""}</div>`+
+    `<div class="chips"><span>${r.reach_km} km</span><span>${r.n_stations} chainage points</span>`+
+    `${r.n_locations?`<span>${r.n_locations} locations</span>`:""}${r.has_depth?`<span>depth ${_esc(r.survey_date||"KML")}</span>`:""}`+
+    `<span>${r.mode==="live"?"LIVE feed":"no live feed"}</span></div></div>`).join("");
+}
+function _markActiveTab(){
+  document.querySelectorAll("#riverTabs .rtab").forEach(b=>{
+    const r=RIVERS[+b.dataset.i]; b.classList.toggle("on", !!r && r.name===ACTIVE_RIVER); b.classList.remove("loading");});
+}
+async function pickRiver(name){
+  if(!name)return;
+  $("uploadNote").textContent="";
+  document.querySelectorAll("#riverTabs .rtab").forEach(b=>{ if(RIVERS[+b.dataset.i]?.name===name) b.classList.add("loading"); });
+  await switchRiver(name);
+}
+
+// source files + direct link + every API endpoint for the open river
+async function drawRiverInfo(){
+  const box=$("riverInfo");
+  if(!ACTIVE_RIVER){ box.style.display="none"; return; }
+  box.style.display="";
+  const rp="?river="+encodeURIComponent(ACTIVE_RIVER);
+  const link=_riverLink(ACTIVE_RIVER);
+  $("riLink").href=link; $("riLink").textContent=link;
+  try{
+    const src=await j("/api/sources"+rp);
+    const roles=[["polygon","River KML"],["chainage","Chainage KML"],["depth","Water-depth KML"],["locations","Locations Excel"]];
+    if(src.builtin){
+      $("riSrcLbl").textContent="Source files ("+(src.source_folder||"")+")";
+      $("riFiles").innerHTML=roles.map(([k,lbl])=>{
+        const f=src.files&&src.files[k];
+        return `<span class="srcf"><i>${lbl}:</i>${f?_esc(f.split("/").pop()):"<span style='color:var(--danger)'>missing</span>"}</span>`;}).join("");
+      $("riRebuild").style.display="";
+      $("riBuilt").textContent=(src.last_action?src.last_action+(src.built_at_utc?" "+src.built_at_utc.replace("T"," ").replace("Z"," UTC"):"")+" · ":"")+(src.status||"")+
+        (src.build_notes&&src.build_notes.length?" · "+src.build_notes.join(" · "):"");
+    }else{
+      $("riSrcLbl").textContent="Source";
+      $("riFiles").innerHTML='<span class="srcf">uploaded from the dashboard</span>';
+      $("riRebuild").style.display="none";
+      $("riBuilt").textContent=(src.build_notes||[]).join(" · ");
+    }
+  }catch(e){ if(e instanceof StaleResponse) return; $("riFiles").textContent="–"; }
+  try{
+    const ep=await j("/api/endpoints"+rp);
+    $("epRiver").textContent=ep.river; $("epCount").textContent=ep.endpoints.length;
+    $("epList").innerHTML='<table><tbody>'+ep.endpoints.map(e=>{
+      const full=location.origin+e.url;
+      const a=e.method==="GET"?`<a href="${_esc(e.url)}" target="_blank" rel="noopener">${_esc(e.url)}</a>`:`<span style="font-family:Consolas,monospace">${_esc(e.url)}</span>`;
+      return `<tr><td><span class="mchip ${e.method}">${e.method}</span></td><td>${a}</td><td style="color:var(--muted)">${_esc(e.description)}</td>`+
+             `<td><button class="cpy" data-u="${_esc(full)}" onclick="_copyText(this.dataset.u,this)">Copy</button></td></tr>`;}).join("")+'</tbody></table>';
+  }catch(e){ if(e instanceof StaleResponse) return; $("epList").textContent="Endpoints unavailable."; }
+}
+
+async function rebuildRiver(){
+  if(!ACTIVE_RIVER)return;
+  const note=$("uploadNote"), btn=$("riRebuild");
+  btn.disabled=true; note.style.color="var(--muted)";
+  note.textContent="Rebuilding "+ACTIVE_RIVER+" from its Digital _twin_kml folder (KMLs + locations Excel), then re-fetching live data…";
+  try{
+    const r=await fetch("/api/rebuild_river?river="+encodeURIComponent(ACTIVE_RIVER),{method:"POST"});
+    const d=await r.json();
+    if(!r.ok||d.error){ note.textContent="Rebuild failed: "+(d.error||r.status); note.style.color="var(--danger)"; return; }
+    note.style.color="#1b5e20";
+    note.textContent=`Rebuilt ${d.display_name}: ${d.reach_km} km, ${d.n_stations} chainages @ ${d.chainage_step_m} m, depth: ${d.has_depth?"yes":"no"}, live feed: ${d.live_mode}. `+(d.notes||[]).join(" · ");
+    await _fillRiverPick();
+    await switchRiver(ACTIVE_RIVER);
+  }catch(e){ note.textContent="Rebuild failed: "+e.message; note.style.color="var(--danger)"; }
+  finally{ btn.disabled=false; }
+}
+
+// ── init ──────────────────────────────────────────────────────────────────
+async function init(){
+  if(typeof Chart==="undefined"){$("nochart").style.display="block";}
+  await _fillRiverPick();
+  // deep link: /?river=<name> (generated after a KML run — see uploadKml()
+  // above) jumps straight to that river's data instead of the blank state,
+  // so the link can be opened in a fresh tab/window.
+  const urlRiver=new URLSearchParams(location.search).get("river");
+  if(urlRiver){
+    const lc=urlRiver.toLowerCase();
+    const m=RIVERS.find(r=>r.name===urlRiver)||RIVERS.find(r=>r.name.toLowerCase()===lc||(r.key||"").toLowerCase()===lc);
+    if(m){
+      try{
+        await switchRiver(m.name);
+        return;
+      }catch(_){ /* fall through to blank state below */ }
+    }
+  }
+  // nothing chosen yet — show the river cards (Mula-Mutha, Mithi, Mandovi, …); a click opens that river
+  _showBlankState();
+}
+
+function _showBlankState(){
+  $("blankState").style.display="";
+  $("mainContent").style.display="none";
+}
+function _hideBlankState(){
+  $("blankState").style.display="none";
+  $("mainContent").style.display="";
+}
+
+async function loadRiverData(){
+  const param=ACTIVE_RIVER?"?river="+encodeURIComponent(ACTIVE_RIVER):"";
+  const meta=await j("/api/meta"+param);
+  if(ACTIVE_RIVER && meta.river!==ACTIVE_RIVER){
+    _serverWarn(`You opened ${ACTIVE_RIVER} but the server sent ${meta.river} data — an older NadiTwin server is probably still running on this port. Close every server window, then run  python run.py  once.`);
+    throw new Error(`server sent ${meta.river} instead of ${ACTIVE_RIVER}`);
+  }
+  META=meta;
+  META.cell_size_m=(META.chainage_km.length>1)
+    ?(META.chainage_km[1]-META.chainage_km[0])*1000:10;
+  $("reachstat").textContent=META.reach_km+" km · "+META.n_cells+" stations";
+  SEGMENTS=_buildSegments();
+  CRIT_CELL={};
+  BOARD_MODE=_hasLoc()?"loc":"km";
+  $("segSelLbl").textContent=_hasLoc()?"Location (stretch)":"Chainage segment (1 km)";
+  CRIT_ALL=null;
+  $("segSel").innerHTML='<option value="all">'+_segmentLabel(-1)+'</option>'+
+    SEGMENTS.map((s,i)=>`<option value="${i}">${s.label}</option>`).join("");
+  $("segSel").value="all";   // a river always opens on ALL its locations first; pick one stretch to zoom in
+  $("headsub").textContent=META.river+" River Intelligence · "+META.reach_km+" km reach";
+  $("reachTitle").textContent="Reach location — "+META.river+" (traced from KML, real polygon + extracted centerline)";
+  _populateHistPickers();
+}
+
+async function switchRiver(name){
+  if(!name){
+    RIVER_GEN++;
+    ACTIVE_RIVER=null;
+    stopLiveTimer();
+    _markActiveTab();
+    drawRiverInfo();
+    _showBlankState();
+    return;
+  }
+  RIVER_GEN++;
+  ACTIVE_RIVER=name;
+  _markActiveTab();
+  try{ history.replaceState(null,"",location.pathname+"?river="+encodeURIComponent(name)); }catch(_){}
+  _hideBlankState();
+  drawRiverInfo();
+  // clear the previous river's stretch list / board right away, so nothing of it stays on screen while loading
+  $("segSel").innerHTML=""; $("board").innerHTML=""; $("qTable").innerHTML=""; $("locInfo").textContent="";
+  try{
+    await loadRiverData();
+  }catch(e){
+    if(e instanceof StaleResponse) return;
+    throw e;
+  }
+  loadMap();
+  MODE="live"; HIST_AT=null;
+  $("modeLive").className="mode-pill";
+  $("modeHist").className="mode-pill off";
+  $("histPickers").style.display="none";
+  $("liveNote").style.display="inline";
+  startLiveTimer();
+  _tickSimClock();
+  await refreshAll();
+}
+
+// ── map ───────────────────────────────────────────────────────────────────
+function _chainageIndices(){
+  const ch=META.chainage_km, n=ch.length;
+  const maxKm=Math.floor(ch[n-1]);
+  const idxs=[];
+  let p=0;
+  for(let km=1;km<=maxKm;km++){
+    while(p<n-1 && Math.abs(ch[p+1]-km)<=Math.abs(ch[p]-km))p++;
+    idxs.push(p);
+  }
+  if(!idxs.length||idxs[idxs.length-1]!==n-1)idxs.push(n-1);
+  return idxs;
+}
+
+// 100 m interval stations along the centerline (finer-grained than the
+// numbered ~1 km markers) — nearest actual station to each 100 m multiple
+// of chainage, deduplicated so coarse-spacing rivers don't repeat a point.
+function _chainageIndices100(){
+  const ch=META.chainage_km, n=ch.length;
+  const maxM=Math.floor(ch[n-1]*1000);
+  const idxs=[];
+  let p=0;
+  for(let m=100;m<=maxM;m+=100){
+    const km=m/1000;
+    while(p<n-1 && Math.abs(ch[p+1]-km)<=Math.abs(ch[p]-km))p++;
+    if(!idxs.length||idxs[idxs.length-1]!==p)idxs.push(p);
+  }
+  return idxs;
+}
+
+function toggleChainage100(){
+  _chainage100Visible=!_chainage100Visible;
+  _chainage100Markers.forEach(m=>{
+    if(typeof L!=="undefined" && m instanceof L.CircleMarker){
+      const el=m.getElement&&m.getElement();
+      if(el)el.style.display=_chainage100Visible?"":"none";
+    }else if(m.setVisible){
+      m.setVisible(_chainage100Visible);
+    }
+  });
+  const btn=$("ch100Toggle");
+  if(btn){
+    btn.textContent="100 m ticks: "+(_chainage100Visible?"ON":"OFF");
+    btn.style.background=_chainage100Visible?"#fff3e0":"#f1f1f1";
+    btn.style.color=_chainage100Visible?"#8a5400":"#777";
+  }
+}
+
+function toggleChainageNos(){
+  _chainageNoVisible=!_chainageNoVisible;
+  _chainageMarkers.forEach(m=>{
+    if(typeof L!=="undefined" && m instanceof L.CircleMarker){
+      if(_chainageNoVisible)m.openTooltip(); else m.closeTooltip();
+    }else if(m.setLabel){
+      m.setLabel(_chainageNoVisible?m._chLabel:null);
+    }
+  });
+  const btn=$("chNoToggle");
+  if(btn){
+    btn.textContent="Chainage no.: "+(_chainageNoVisible?"ON":"OFF");
+    btn.style.background=_chainageNoVisible?"#fff9d6":"#f1f1f1";
+    btn.style.color=_chainageNoVisible?"#7a6400":"#777";
+  }
+}
+
+function loadMap(){
+  if(GOOGLE_MAPS_API_KEY&&GOOGLE_MAPS_API_KEY.trim()!==""){
+    window.initGoogleMap=drawGoogleMap;
+    const s=document.createElement("script");
+    s.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(GOOGLE_MAPS_API_KEY)+"&callback=initGoogleMap";
+    s.onerror=()=>{drawLeafletMap();};
+    document.head.appendChild(s);
+  }else{drawLeafletMap();}
+}
+
+function drawGoogleMap(){
+  const cx=META.lon[Math.floor(META.lon.length/2)];
+  const cy=META.lat[Math.floor(META.lat.length/2)];
+  const map=new google.maps.Map($("map"),{center:{lat:cy,lng:cx},zoom:13,mapTypeId:"satellite",
+    mapTypeControl:true,streetViewControl:false,
+    mapTypeControlOptions:{position:google.maps.ControlPosition.TOP_RIGHT}});
+  new google.maps.Polygon({paths:META.reach_polygon_lonlat.map(([lo,la])=>({lat:la,lng:lo})),
+    strokeColor:"#2dc0fb",strokeWeight:2,fillColor:"#2dc0fb",fillOpacity:.12}).setMap(map);
+  new google.maps.Polyline({path:META.lat.map((la,i)=>({lat:la,lng:META.lon[i]})),
+    strokeColor:"#ffee58",strokeWeight:3}).setMap(map);
+  const chIdx=_chainageIndices();
+  _chainageMarkers=[];
+  chIdx.forEach((i,n)=>{
+    const gm=new google.maps.Marker({position:{lat:META.lat[i],lng:META.lon[i]},map,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:2.5,
+        fillColor:"#ffe000",fillOpacity:1,strokeWeight:0},
+      label:_chainageNoVisible?{text:String(n+1),color:"#ffe000",fontSize:"10px",fontWeight:"700"}:null,
+      title:"Chainage "+META.chainage_km[i].toFixed(2)+" km (point "+(n+1)+" of "+chIdx.length+")"});
+    gm._chLabel={text:String(n+1),color:"#ffe000",fontSize:"10px",fontWeight:"700"};
+    _chainageMarkers.push(gm);
+  });
+  const ch100Idx=_chainageIndices100();
+  _chainage100Markers=[];
+  ch100Idx.forEach(i=>{
+    const gm100=new google.maps.Marker({position:{lat:META.lat[i],lng:META.lon[i]},map,
+      visible:_chainage100Visible,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:1.4,
+        fillColor:"#ff8f00",fillOpacity:.9,strokeWeight:0},
+      title:"Chainage "+META.chainage_km[i].toFixed(2)+" km"});
+    _chainage100Markers.push(gm100);
+  });
+  const bounds=new google.maps.LatLngBounds();
+  META.reach_polygon_lonlat.forEach(([lo,la])=>bounds.extend({lat:la,lng:lo}));
+  map.fitBounds(bounds);
+}
+
+function drawLeafletMap(){
+  if(typeof L==="undefined")return;
+  if(_leafletMap){_leafletMap.remove();_leafletMap=null;}
+  const cx=META.lon[Math.floor(META.lon.length/2)];
+  const cy=META.lat[Math.floor(META.lat.length/2)];
+  _leafletMap=L.map('map').setView([cy,cx],14);
+  const map=_leafletMap;
+  const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,attribution:'Tiles &copy; Esri'});
+  const st=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'});
+  sat.addTo(map);
+  L.control.layers({"Satellite":sat,"Street map":st},null,{position:'topright'}).addTo(map);
+  const poly=META.reach_polygon_lonlat.map(([lo,la])=>[la,lo]);
+  L.polygon(poly,{color:'#2dc0fb',weight:2,fillOpacity:.12}).addTo(map);
+  L.polyline(META.lat.map((la,i)=>[la,META.lon[i]]),{color:'#ffee58',weight:3}).addTo(map);
+  _selLayer=L.featureGroup().addTo(map);  // white halo under the selected location's stretch
+  _zoneLayer=L.layerGroup().addTo(map);   // location areas / 1 km segments coloured by margin-board zone (filled by drawBoard)
+  _locLayer=L.layerGroup().addTo(map);
+  (META.location_points||[]).forEach((Lc,k)=>{
+    if(Lc.far_from_river&&Lc.input_lat!=null){
+      L.polyline([[Lc.input_lat,Lc.input_lon],[Lc.lat,Lc.lon]],{color:"#0b3556",weight:1.5,dashArray:"4 4"}).addTo(_locLayer);
+      L.circleMarker([Lc.input_lat,Lc.input_lon],{radius:4,color:"#0b3556",fillColor:"#fff",fillOpacity:1,weight:2})
+        .bindTooltip(Lc.name+" (Excel point)",{direction:"top"}).addTo(_locLayer);
+    }
+    const mk=L.circleMarker([Lc.lat,Lc.lon],{radius:7,color:"#fff",fillColor:"#0b3556",fillOpacity:1,weight:2})
+      .bindTooltip(Lc.name,{permanent:true,direction:"right",offset:[8,0],className:"loc-label"}).addTo(_locLayer);
+    mk.on("click",()=>{
+      const st=(META.locations||[]); let j=st.findIndex(x=>x.from_point===k); if(j<0) j=st.findIndex(x=>x.to_point===k);
+      if(j>=0) selectArea(j);
+    });
+  });
+  // chainage dots — every ~1 km along centerline, yellow, numbered 1,2,3...last, click shows chainage
+  const chIdx=_chainageIndices();
+  _chainageMarkers=[];
+  chIdx.forEach((i,n)=>{
+    const la=META.lat[i],lo=META.lon[i],ch=META.chainage_km[i];
+    const cm=L.circleMarker([la,lo],{radius:2.5,color:'#ffe000',fillColor:'#ffe000',
+      fillOpacity:1,weight:0})
+      .bindTooltip(String(n+1),{permanent:true,direction:'top',offset:[0,-2],className:'chainage-label'})
+      .bindPopup(`<b>Chainage ${ch.toFixed(2)} km</b> (point ${n+1} of ${chIdx.length})`)
+      .addTo(map);
+    _chainageMarkers.push(cm);
+  });
+  if(!_chainageNoVisible)_chainageMarkers.forEach(m=>m.closeTooltip());
+  // finer 100 m interval ticks — small, unlabeled, click for exact chainage
+  const ch100Idx=_chainageIndices100();
+  _chainage100Markers=[];
+  ch100Idx.forEach(i=>{
+    const la=META.lat[i],lo=META.lon[i],ch=META.chainage_km[i];
+    const cm=L.circleMarker([la,lo],{radius:1.4,color:'#ff8f00',fillColor:'#ff8f00',
+      fillOpacity:.9,weight:0})
+      .bindPopup(`Chainage ${ch.toFixed(2)} km`)
+      .addTo(map);
+    _chainage100Markers.push(cm);
+  });
+  if(!_chainage100Visible)_chainage100Markers.forEach(m=>{const el=m.getElement&&m.getElement();if(el)el.style.display="none";});
+  map.fitBounds(L.latLngBounds(poly),{padding:[20,20]});
+}
+
+// ── data refresh ──────────────────────────────────────────────────────────
+async function refreshAll(){
+  const rp=riverParam(false)+atParam();
+  const st=await j("/api/state"+rp);
+  $("qnow").textContent=st.q_up_now+" → "+st.q_out_now+" m³/s";
+  const stale=st.note&&/STALE/i.test(st.note);
+  $("livebadge").textContent=(st.mode==="live")?(stale?"🟠 live data, STALE (offline)":"🟢 live (Open-Meteo/GloFAS)"):"🔴 synthetic (no feed)";
+  $("livebadge").title=st.note||"";
+  window._wseNow=st.wse;
+  await drawLive();
+  await drawBoard();      // first: it picks the most vulnerable station of each area used below
+  _showLocInfo();
+  _highlightSelection(false);
+  await drawQ10();
+  await drawProfile();
+  await drawHydro();
+  await drawRating();
+}
+
+async function drawProfile(){
+  if(typeof Chart==="undefined"||!window._wseNow)return;
+  const idx=_segIdx();
+  const [i0,i1]=_segmentCellRange(idx);
+  $("profileSegLbl").textContent=_segmentLabel(idx);
+  const fb=META.freeboard_m??0.8, zw=META.zone_watch_m??1.7, zr=META.zone_warning_m??0.7, U=META.datum_short||"m";
+  const sl=a=>a.slice(i0,i1+1);
+  const wse=sl(window._wseNow), bed=sl(META.bed), crest=sl(META.crest), lab=sl(META.chainage_label);
+  const danger=crest.map(v=>v-fb), warn=danger.map(v=>v-zr), watch=danger.map(v=>v-zw);
+  // values with units: at the stretch's weakest point (as on the margin board) + range over the stretch
+  const c=_segmentCell(idx), k=c-i0;
+  const dep=wse.map((v,i)=>v-bed[i]);
+  const f2=v=>(+v).toFixed(2);
+  const tiles=[
+    ["River stage now (water level)", `${f2(window._wseNow[c])} m WSE`],
+    ["Water depth", `${f2(window._wseNow[c]-META.bed[c])} m`],
+    ["Danger level", `${f2(META.crest[c]-fb)} m WSE`],
+    ["Water can rise before danger", `${f2(META.crest[c]-fb-window._wseNow[c])} m`],
+    ["Stage range in this stretch", `${f2(Math.min(...wse))} – ${f2(Math.max(...wse))} m WSE`],
+    ["Depth range in this stretch", `${f2(Math.min(...dep))} – ${f2(Math.max(...dep))} m`],
+  ];
+  $("stageStats").innerHTML=tiles.map(([a,b])=>`<div class="stat">${a}<b>${b}</b></div>`).join("")+
+    `<div class="note" style="align-self:center">first four values at the weakest point of this stretch, chainage <b>${META.chainage_label[c]}</b></div>`;
+  const tgt=500, d=a=>decimateAdaptive(a,tgt);
+  const ds=[
+    {label:"River stage now (m WSE)",data:d(wse),borderColor:"#1f77b4",borderWidth:2.2,pointRadius:0,fill:false},
+    {label:"River bed",data:d(bed),borderColor:"#8d6e63",borderWidth:1.5,pointRadius:0,fill:{target:"start"},backgroundColor:"rgba(141,110,99,.18)"},
+    {label:"Watch level",data:d(watch),borderColor:ZONE_COL.WATCH,borderWidth:1.2,borderDash:[6,4],pointRadius:0,fill:false},
+    {label:"Warning level",data:d(warn),borderColor:ZONE_COL.WARNING,borderWidth:1.2,borderDash:[6,4],pointRadius:0,fill:false},
+    {label:"Danger level",data:d(danger),borderColor:ZONE_COL.DANGER,borderWidth:1.6,borderDash:[6,4],pointRadius:0,fill:false},
+    {label:"Bank crest",data:d(crest),borderColor:"#37474f",borderWidth:1.3,borderDash:[2,3],pointRadius:0,fill:false},
+  ];
+  const cfg={type:"line",data:{labels:d(lab),datasets:ds},
+    options:{animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${(+ctx.parsed.y).toFixed(2)} m WSE`}}},
+      scales:{x:{title:{display:true,text:"Chainage (km+m)"},ticks:{maxTicksLimit:14}},
+              y:{title:{display:true,text:"Level (m WSE)"}}}}};
+  if(profileChart){profileChart.destroy();profileChart=null;}
+  profileChart=new Chart($("profile"),cfg);
+}
+
+function _fmtT(iso,long,withYear){
+  const d=new Date(iso);
+  const mo=d.toLocaleString(undefined,{month:"short"});
+  const hh=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  if(withYear) return `${d.getDate()} ${mo} ${d.getFullYear()}`;   // multi-month / multi-year windows
+  return long?`${d.getDate()} ${mo} ${hh}`:`${d.getDate()} ${mo}`;
+}
+async function drawHydro(){
+  const rp2=riverParam(true)+atParam();
+  if(typeof Chart==="undefined")return;
+  const idx=_segIdx();
+  const cell=_segmentCell(idx);
+  $("hydroPointLbl").textContent=(idx<0&&CRIT_ALL?`All locations · weakest stretch ${CRIT_ALL.name}, chainage ${CRIT_ALL.label}`:_segmentLabel(idx));
+  const win=$("hydroWin")?$("hydroWin").value:"72";
+  const isYear=/^y\d{4}$/.test(win);
+  const h=await j("/api/hydrograph?cell="+cell+(isYear?"&year="+win.slice(1):"&hours="+win)+rp2);
+  const nO=h.observed.length, nF=h.forecast.median.length;
+  const long=(h.hours<=24*10);
+  const yr=!isYear&&h.hours>24*60;      // a single calendar year doesn't need the year on every label
+  const labels=h.times.map(t=>_fmtT(t,long,yr)).concat(h.forecast.times.map(t=>_fmtT(t,true)));
+  const padO=Array(nO).fill(null), padF=Array(nF).fill(null);
+  const L=h.levels, n=labels.length;
+  const flat=v=>Array(n).fill(v);
+  const rainO=h.observed_rain||Array(nO).fill(null), rainF=h.forecast.rain||Array(nF).fill(null);
+  const rainAll=rainO.concat(rainF).filter(v=>v!=null);
+  const rmax=Math.max(1,...rainAll);
+  const ds=[
+    {label:"Stage P90",data:padO.concat(h.forecast.p90),borderWidth:0,pointRadius:0,backgroundColor:"rgba(126,87,194,.18)",fill:false},
+    {label:"Stage P10",data:padO.concat(h.forecast.p10),borderWidth:0,pointRadius:0,backgroundColor:"rgba(126,87,194,.18)",fill:"-1"},
+    {label:"Stage forecast median",data:padO.concat(h.forecast.median),borderColor:"#7e57c2",borderWidth:2,pointRadius:0,fill:false},
+    {label:"Stage observed",data:h.observed.concat(padF),borderColor:"#1f77b4",borderWidth:2,pointRadius:0,fill:false},
+    {label:"Watch level",data:flat(L.watch),borderColor:ZONE_COL.WATCH,borderDash:[6,4],borderWidth:1.3,pointRadius:0,fill:false},
+    {label:"Warning level",data:flat(L.warning),borderColor:ZONE_COL.WARNING,borderDash:[6,4],borderWidth:1.3,pointRadius:0,fill:false},
+    {label:"Danger level",data:flat(L.danger),borderColor:ZONE_COL.DANGER,borderDash:[6,4],borderWidth:1.8,pointRadius:0,fill:false},
+    {label:"Discharge observed (m³/s)",data:h.observed_q.concat(padF),borderColor:"#00897b",borderWidth:1.5,pointRadius:0,fill:false,yAxisID:"y2"},
+    {label:"Discharge forecast median (m³/s)",data:padO.concat(h.forecast.q_median),borderColor:"#00897b",borderDash:[6,3],borderWidth:1.5,pointRadius:0,fill:false,yAxisID:"y2"},
+    {type:"bar",label:"Rain (mm)",data:rainO.concat(rainF),backgroundColor:"rgba(100,181,246,.7)",yAxisID:"y3",barPercentage:1,categoryPercentage:1},
+  ];
+  const cfg={type:"line",data:{labels,datasets:ds},
+    options:{animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false}},
+      scales:{x:{title:{display:true,text:isYear?(nF?`Local time — ${h.year} (observed → | → forecast)`:`Local time — ${h.year} (1 Jan – 31 Dec)`):"Local time (observed → | → forecast)"},ticks:{maxTicksLimit:12,autoSkip:true}},
+              y:{title:{display:true,text:"River stage ("+(h.datum||"m")+")"}},
+              y2:{position:"right",grid:{drawOnChartArea:false},title:{display:true,text:"Discharge (m³/s)"},beginAtZero:true},
+              y3:{position:"right",reverse:true,min:0,max:rmax*3,grid:{drawOnChartArea:false},title:{display:true,text:"Rain (mm)"}}}}};
+  if(hydroChart){hydroChart.destroy();hydroChart=null;}
+  hydroChart=new Chart($("hydro"),cfg);
+  $("hydroInfo").textContent=`most vulnerable station of this ${_hasLoc()?"stretch":"km"}: chainage ${h.chainage_km.toFixed(2)} km · ${h.step_h>1?("each point = peak of "+h.step_h+" h · "):""}danger level ${L.danger} m is reached at Q ≈ ${h.q_danger??"—"} m³/s · bank crest ${L.crest} m`;
+  const ys=h.year_summary, box=$("hydroYear");
+  if(ys&&box){
+    const pd=new Date(ys.peak_at), A=ys.hours_above||{};
+    const hrs=v=>v>=48?`${v} h (${(v/24).toFixed(1)} days)`:`${v} h`;
+    const tiles=[
+      [`Peak discharge ${ys.year}`,`${ys.peak_q_m3s} m³/s`],
+      ["Peak on",pd.toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})],
+      ["Peak river stage",`${ys.peak_stage} ${h.datum||"m"}`],
+      ["Rain in the year",ys.rain_total_mm!=null?`${ys.rain_total_mm} mm`:"–"],
+      ["Above watch level",hrs(A.watch||0)],["Above warning level",hrs(A.warning||0)],["Above danger level",hrs(A.danger||0)],
+    ];
+    box.innerHTML=tiles.map(([a,b])=>`<div class="stat">${a}<b>${b}</b></div>`).join("")+
+      `<div class="note" style="align-self:center">${ys.complete?"whole year":"1 Jan → now"} at this station · rain = this km's rain</div>`;
+    box.style.display="";
+  }else if(box){ box.style.display="none"; box.innerHTML=""; }
+}
+
+async function drawRating(){
+  if(typeof Chart==="undefined"||!$("rating"))return;
+  const idx=_segIdx();
+  const cell=_segmentCell(idx);
+  const rt=await j("/api/rating?cell="+cell+riverParam(true)+atParam());
+  $("ratingLbl").textContent=(idx<0&&CRIT_ALL?`All locations · weakest stretch ${CRIT_ALL.name}`:_segmentLabel(idx))+" — most vulnerable station, chainage "+rt.chainage_km.toFixed(2)+" km, width "+rt.width_m+" m (hydraulic "+rt.hydraulic_width_m+" m)";
+  const qx=rt.q, x0=qx[0], x1=qx[qx.length-1], L=rt.levels;
+  const line=(y,col,lab,dash,w)=>({label:lab,data:[{x:x0,y},{x:x1,y}],borderColor:col,borderDash:dash||[6,4],borderWidth:w||1.3,pointRadius:0,showLine:true,fill:false});
+  const ds=[
+    {label:"Rating curve (Manning; 500 m hydraulic width"+(META.has_real_depth?"; surveyed depth":"")+"; floodplain ×"+rt.floodplain_factor+" above crest)",data:qx.map((q,i)=>({x:q,y:rt.stage[i]})),borderColor:"#0b3556",borderWidth:2,pointRadius:0,showLine:true,fill:false},
+    line(L.watch,ZONE_COL.WATCH,"Watch level"),line(L.warning,ZONE_COL.WARNING,"Warning level"),
+    line(L.danger,ZONE_COL.DANGER,"Danger level",null,1.8),line(L.crest,"#37474f","Bank crest",[2,3]),
+    {label:"Now",data:[{x:rt.now.q,y:rt.now.stage}],backgroundColor:"#1f77b4",pointRadius:7,showLine:false},
+    {label:"72 h forecast peak (median)",data:[{x:rt.peak72.q,y:rt.peak72.stage}],backgroundColor:"#7e57c2",pointStyle:"triangle",pointRadius:8,showLine:false},
+  ];
+  const cfg={type:"scatter",data:{datasets:ds},options:{animation:false,
+    plugins:{legend:{display:true,position:"bottom",labels:{boxWidth:12,font:{size:11}}}},
+    scales:{x:{type:"logarithmic",title:{display:true,text:"Discharge Q (m³/s, log scale)"},
+              ticks:{autoSkip:false,maxRotation:0,callback:v=>{const m=v/Math.pow(10,Math.floor(Math.log10(v)));return (Math.abs(m-1)<1e-6||Math.abs(m-2)<1e-6||Math.abs(m-5)<1e-6)?(+v).toLocaleString():"";}}},
+            y:{title:{display:true,text:"Stage ("+(rt.datum||"m")+")"}}}}};
+  if(ratingChart){ratingChart.destroy();ratingChart=null;}
+  ratingChart=new Chart($("rating"),cfg);
+  const qa=rt.q_at;
+  $("ratingInfo").innerHTML=`Now: Q <b>${rt.now.q}</b> m³/s → stage <b>${rt.now.stage}</b> m. Discharge needed to reach `+
+    `<span class="zchip WATCH">WATCH</span> ${qa.watch??"—"} · <span class="zchip WARNING">WARNING</span> ${qa.warning??"—"} · `+
+    `<span class="zchip DANGER">DANGER</span> ${qa.danger??"—"} · crest ${qa.crest??"—"} m³/s. `+
+    `Manning n ${rt.manning_n}, slope ${rt.slope.toExponential(2)}.`;
+}
+
+function setBoardMode(m){ BOARD_MODE=m; drawBoard(); }
+function _kmCells(k){
+  const chKm=META.chainage_km, n=chKm.length, [a,e]=META.seg_bounds_km[k];
+  let i0=chKm.findIndex(v=>v>=a-1e-9); if(i0<0)i0=0; let i1=i0;
+  for(let i=i0;i<n;i++){ if(chKm[i]<=e+1e-9) i1=i; else break; }
+  return [i0,i1];
+}
+function _markBoardSel(){
+  const idx=_segIdx();
+  document.querySelectorAll("#board .asset").forEach(el=>el.classList.toggle("sel",BOARD_MODE==="loc"&&+el.dataset.k===idx));
+}
+async function drawBoard(){
+  const rp=riverParam(true)+atParam();
+  const hasLoc=_hasLoc();
+  if(!hasLoc) BOARD_MODE="km";
+  $("bmLoc").style.display=hasLoc?"":"none"; $("bmKm").style.display=hasLoc?"":"none";
+  $("bmLoc").classList.toggle("on",BOARD_MODE==="loc"); $("bmKm").classList.toggle("on",BOARD_MODE==="km");
+  let locMs=[];
+  if(hasLoc){
+    locMs=await j("/api/margins_locations?"+rp.slice(1));
+    if(Array.isArray(locMs)) locMs.forEach((m,k)=>{CRIT_CELL[k]=m.cell;});
+  }
+  // weakest point of the whole river (used by "All locations" for the hydrograph + rating curve)
+  const _setCritAll=arr=>{
+    if(!Array.isArray(arr)||!arr.length) return;
+    const w=arr.reduce((a,b)=>(+b.margin_now_m<+a.margin_now_m?b:a));
+    CRIT_ALL={cell:w.cell, name:w.name, label:w.label||META.chainage_label[w.cell]};
+  };
+  let ms;
+  if(BOARD_MODE==="loc") ms=locMs;
+  else{
+    ms=await j("/api/margins_chainage?step_km="+SEG_STEP_KM+rp);
+    if(!hasLoc && Array.isArray(ms)) ms.forEach(m=>{CRIT_CELL[m.segment-1]=m.cell;});
+  }
+  if(!Array.isArray(ms)){ $("board").textContent="Margin board error: "+(ms&&ms.error); return; }
+  _setCritAll(hasLoc?locMs:ms);
+  $("boardTitle").textContent=BOARD_MODE==="loc"?"by location (from your Excel)":"every 1 km of chainage";
+  const cnt={SAFE:0,WATCH:0,WARNING:0,DANGER:0};
+  ms.forEach(m=>cnt[m.status]++);
+  $("boardAt").textContent="— SAFE "+cnt.SAFE+" · WATCH "+cnt.WATCH+" · WARNING "+cnt.WARNING+" · DANGER "+cnt.DANGER;
+  $("board").innerHTML=ms.map((m,k)=>`
+    <div class="asset ${m.status}" data-k="${k}" onclick="${BOARD_MODE==="loc"?`selectArea(${k})`:""}" title="${BOARD_MODE==="loc"?"click: show this location":""}">
+      <b>${m.name}</b> <span style="font-size:11px">${m.status}${BOARD_MODE==="loc"?` · ${m.from_km.toFixed(2)}–${m.to_km.toFixed(2)} km`:""}</span>
+      <div class="m">${m.margin_now_m>0?"+":""}${m.margin_now_m} m</div>
+      <div>Q ${m.q_now} m³/s · stage ${m.wse_now} m · depth ${m.depth_now_m} m</div>
+      <div>Danger level ${m.levels.danger} m (bank ${m.bank_height_m} m) · reached at Q ≈ ${m.q_danger??"—"} m³/s</div>
+      <div>72 h peak: Q ${m.peak_q_72h} · stage ${m.peak_stage_72h} m (~${m.peak_in_h} h)</div>
+      <div>P(exceed 72 h): ${(m.p_exceed_72h*100).toFixed(0)}% · ${m.time_to_threshold_h?("~"+m.time_to_threshold_h+" h to danger"):"no median crossing"}</div>
+      ${m.rain_next_24h_mm!==undefined?`<div>Rain: now ${m.rain_now_mmh} mm/h · past 24 h ${m.rain_past_24h_mm} · next 24 h ${m.rain_next_24h_mm} mm</div>`:""}
+      <div style="font-size:11px;opacity:.85">by ${m.basis} · weakest point ch ${m.label||(m.chainage_m/1000).toFixed(2)}${m.n_chainages?` of ${m.n_chainages} chainages`:""}</div>
+    </div>`).join("");
+  _markBoardSel();
+  // colour the map: one stretch per location area (or per km)
+  if(_zoneLayer&&typeof L!=="undefined"){
+    _zoneLayer.clearLayers();
+    ms.forEach((m,k)=>{
+      const [a,b]=BOARD_MODE==="loc"?[SEGMENTS[k].i0,SEGMENTS[k].i1]:_kmCells(m.segment-1);
+      const pts=[]; for(let i=a;i<=Math.min(b+1,META.lat.length-1);i++)pts.push([META.lat[i],META.lon[i]]);
+      const pl=L.polyline(pts,{color:ZONE_COL[m.status],weight:7,opacity:.9}).bindTooltip(
+        `<b>${m.name}: ${m.status}</b><br>Q ${m.q_now} m³/s · stage ${m.wse_now} m · margin ${m.margin_now_m} m`,{sticky:true}).addTo(_zoneLayer);
+      if(BOARD_MODE==="loc") pl.on("click",()=>selectArea(k));
+    });
+  }
+}
+
+let qProfileChart=null;
+async function drawLive(){
+  const rp=riverParam(false)+atParam();
+  let lv;
+  try{ lv=await j("/api/live"+rp); }catch(e){ return; }
+  const st=lv.status||{};
+  const src=st.sources||{};
+  $("liveSrcLbl").textContent=st.mode==="live"
+    ? "— updated "+(st.fetched_at||"")+" UTC · rain: forecast "+(src.forecast||"?")+" / archive "+(src.archive||"?")+" · GloFAS: "+(src.glofas||"?")+" · ensemble: "+(src.glofas_ensemble||"?")+(st.note?" · "+st.note:"")
+    : "— "+(st.note||"no live feed");
+  const w=lv.weather;
+  $("weatherRow").innerHTML=w?[
+    ["Rain now",w.rain_now_mmh+" mm/h"],["Rain past 24 h",w.rain_past_24h_mm+" mm"],["Rain next 24 h",w.rain_next_24h_mm+" mm"],
+    ["Temp",w.temperature_c+" °C"],["Humidity",w.humidity_pct+" %"],["Wind",w.wind_kmh+" km/h"],["ET0",w.et0_mmh+" mm/h"]
+  ].map(([a,b])=>`<div class="stat">${a}<b>${b}</b></div>`).join(""):"";
+  const oc=lv.outlet_check;
+  $("liveNote2").textContent=(lv.calibration?("Stage calibration: "+lv.calibration+". "):"")+
+    (oc?`Cross-check at the outlet: model ${oc.model_outlet_m3s} m³/s vs GloFAS ${oc.glofas_outlet_m3s} m³/s (GloFAS has no urban inflow). `:"");
+  const t=lv.terrain||{}, as=lv.assumptions||{};
+  $("terrainNote").innerHTML=`<b>Terrain & hydraulics:</b> stage datum ${t.datum||"?"} · slope ${t.slope_m_per_m} (${t.slope_source}) · upstream end = ${t.upstream_end} (${t.flow_dir_source}) · bank heights ${t.bank_source} · Manning n ${as.manning_n} · urban inflow ${as.urban_dwf_m3s_per_km} m³/s per km (assumed) · local catchment ${as.local_catchment_km2_per_km} km² per km. ${as.note||""}`;
+}
+
+// discharge at every chainage (10 m) for the selected stretch: Q now / +24 h / +72 h + rain, merged table, Excel
+async function drawQ10(){
+  const idx=_segIdx();
+  const sg=idx>=0?SEGMENTS[idx]:null;
+  $("q10Lbl").textContent=sg?(sg.name||sg.label):"whole river";
+  const base=riverParam(true)+atParam();
+  let rng="";
+  if(sg) rng=sg.loc?`&loc=${sg.loc.id}`:`&from_km=${META.chainage_km[sg.i0]}&to_km=${META.chainage_km[sg.i1]}`;
+  const xl=sg&&sg.loc?sg.loc.id:"all";
+  $("xlsArea").href="/api/stations.xlsx?"+(base+"&loc="+xl).slice(1);
+  $("xlsArea").style.display=(sg&&sg.loc)?"":"none";
+  $("xlsAll").href="/api/stations.xlsx?"+(base+"&loc=all").slice(1);
+  const t=await j("/api/stations?"+(base+rng).slice(1));
+  if(!t||!t.q)return;
+  const qmin=Math.min(...t.q), qmax=Math.max(...t.q);
+  $("q10Info").textContent=`${t.n} chainage points · Q now ${qmin.toFixed(2)} → ${qmax.toFixed(2)} m³/s · ${new Date(t.at).toLocaleString()}`;
+  if(typeof Chart!=="undefined"){
+    const cfg={data:{labels:t.label,datasets:[
+      {type:"line",label:"Q now",data:t.q,borderColor:"#1f77b4",borderWidth:2,pointRadius:0,fill:false,yAxisID:"y"},
+      {type:"line",label:"Q +24 h (median)",data:t.q24,borderColor:"#7e57c2",borderWidth:2,borderDash:[6,3],pointRadius:0,fill:false,yAxisID:"y"},
+      {type:"line",label:"Q +72 h (median)",data:t.q72,borderColor:"#d32f2f",borderWidth:2,borderDash:[2,3],pointRadius:0,fill:false,yAxisID:"y"},
+      {type:"bar",label:"Rain now (mm/h)",data:t.rain_now_mmh,backgroundColor:"rgba(144,202,249,.55)",yAxisID:"y2",barPercentage:1,categoryPercentage:1},
+    ]},options:{animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false}},
+      scales:{x:{title:{display:true,text:"Chainage (km+m), every 10 m"},ticks:{maxTicksLimit:16,autoSkip:true}},
+              y:{title:{display:true,text:"Discharge (m³/s)"}},
+              y2:{position:"right",grid:{drawOnChartArea:false},title:{display:true,text:"Rain now (mm/h)"},beginAtZero:true,suggestedMax:5}}}};
+    if(qProfileChart){qProfileChart.destroy();qProfileChart=null;}
+    qProfileChart=new Chart($("qProfile"),cfg);
+  }
+  const f=(v,d)=>v==null?"–":(+v).toFixed(d);
+  const showLoc=!sg;
+  let html=`<table><thead><tr>${showLoc?"<th>Location</th>":""}<th>Chainage</th><th class="num">Width<br>m</th><th class="num">Q now<br>m³/s</th><th class="num">Q +24 h<br>(P10–P90)</th><th class="num">Q +72 h<br>(P10–P90)</th><th class="num">Peak Q<br>72 h</th><th class="num">Velocity<br>m/s</th><th class="num" title="water surface minus river bed">Water depth<br>m</th><th class="num" title="water surface elevation (WSE)">River stage<br>(water level)<br>m WSE</th><th class="num" title="bank crest minus 0.8 m freeboard">Danger level<br>m WSE</th><th class="num" title="danger level minus river stage">Margin below<br>danger, m</th><th>Zone</th><th class="num">Rain now<br>mm/h</th><th class="num">Rain past<br>24 h mm</th><th class="num">Rain next<br>24 h mm</th></tr></thead><tbody>`;
+  for(let i=0;i<t.n;i++){
+    html+=`<tr>${showLoc?`<td>${t.location[i]||""}</td>`:""}<td>${t.label[i]}</td><td class="num">${f(t.width_m[i],1)}</td><td class="num"><b>${f(t.q[i],3)}</b></td>`+
+      `<td class="num">${f(t.q24[i],2)} (${f(t.q24_p10[i],2)}–${f(t.q24_p90[i],2)})</td><td class="num">${f(t.q72[i],2)} (${f(t.q72_p10[i],2)}–${f(t.q72_p90[i],2)})</td>`+
+      `<td class="num">${f(t.q_peak72[i],2)}${t.peak_in_h[i]?` <span style="color:var(--muted)">(${t.peak_in_h[i]} h)</span>`:""}</td><td class="num">${f(t.velocity_ms[i],3)}</td><td class="num">${f(t.depth_m[i],2)}</td>`+
+      `<td class="num">${f(t.stage[i],2)}</td><td class="num">${f(t.danger_level[i],2)}</td><td class="num">${f(t.margin_m[i],2)}</td><td><span class="zchip ${t.zone[i]}">${t.zone[i]}</span></td>`+
+      `<td class="num">${t.rain_now_mmh[i]??"–"}</td><td class="num">${t.rain_past24_mm[i]??"–"}</td><td class="num">${t.rain_next24_mm[i]??"–"}</td></tr>`;
+  }
+  $("qTable").innerHTML=html+"</tbody></table>";
+}
+
+(async()=>{
+  const overlay=$("loadOverlay");
+  const msg=$("loadMsg");
+  try{
+    await init();
+    overlay.classList.add("done");
+    setTimeout(()=>overlay.style.display="none",450);
+  }catch(e){
+    msg.textContent="Load error: "+e.message;
+    msg.style.color="var(--danger)";
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>

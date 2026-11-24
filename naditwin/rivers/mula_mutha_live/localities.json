@@ -1,0 +1,42 @@
+[
+ {
+  "name": "Sangam",
+  "lon": 73.8598,
+  "lat": 18.5316
+ },
+ {
+  "name": "Bund Garden",
+  "lon": 73.8834,
+  "lat": 18.5406
+ },
+ {
+  "name": "Dhanori",
+  "lon": 73.9105,
+  "lat": 18.5869
+ },
+ {
+  "name": "Wadgaon Sheri",
+  "lon": 73.9231,
+  "lat": 18.5533
+ },
+ {
+  "name": "Kharadi",
+  "lon": 73.9436,
+  "lat": 18.5522
+ },
+ {
+  "name": "Mundhwa",
+  "lon": 73.9439,
+  "lat": 18.5322
+ },
+ {
+  "name": "Hadapsar",
+  "lon": 73.928,
+  "lat": 18.505
+ },
+ {
+  "name": "Manjari",
+  "lon": 73.9718,
+  "lat": 18.5124
+ }
+]

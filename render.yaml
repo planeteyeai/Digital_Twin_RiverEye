@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: naditwin
+    runtime: docker
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/rivers
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NADITWIN_HISTORY_START
+        value: 2021-01-01
+      - key: PYTHONUNBUFFERED
+        value: 1

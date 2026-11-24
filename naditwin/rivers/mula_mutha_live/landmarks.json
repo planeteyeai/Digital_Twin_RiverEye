@@ -1,0 +1,22 @@
+[
+ {
+  "name": "Sangam (Mula-Mutha confluence)",
+  "chainage_m": 560.0,
+  "chainage_km": 0.56,
+  "lon": 73.86009838,
+  "lat": 18.53150761,
+  "type": "confluence",
+  "source": "snapped",
+  "snap_distance_m": 35.9
+ },
+ {
+  "name": "Bund Garden",
+  "chainage_m": 3470.0,
+  "chainage_km": 3.47,
+  "lon": 73.88312317,
+  "lat": 18.54303177,
+  "type": "bridge",
+  "source": "snapped",
+  "snap_distance_m": 4.3
+ }
+]

@@ -1,0 +1,11 @@
+{
+  "_note": "Optional model overrides for this river. Any key you delete falls back to the default in live_data.py / engine.py.",
+  "flow_dir": 1,
+  "_flow_dir": "1 = chainage 0+000 (near Sangam) is the upstream end, as in the 10 m chainage KML",
+  "manning_n": 0.035,
+  "dwf_m3s_per_km": 0.12,
+  "_dwf": "urban dry-weather inflow per km of river (STP outfalls + nallas), m3/s. ASSUMED - replace with PMC STP discharge data",
+  "area_km2_per_km": 5.0,
+  "_bank_height_m": "add  \"bank_height_m\": 4.5  (one value) or a list with one value per km (17 values) to replace the DEM-estimated bank heights with surveyed embankment levels (m above the survey-day water surface)",
+  "_slope": "add  \"slope\": 0.0004  to override the DEM water-surface slope"
+}

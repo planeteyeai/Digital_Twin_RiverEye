@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  naditwin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NADITWIN_HISTORY_START=2021-01-01
+    volumes:
+      # Persist cache and river data
+      - ./naditwin/rivers:/app/naditwin/rivers
+      - ./Digital _twin_kml:/app/Digital _twin_kml
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/rivers')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

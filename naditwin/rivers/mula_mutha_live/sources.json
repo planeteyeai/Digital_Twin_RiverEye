@@ -1,0 +1,37 @@
+{
+ "river": "Mula-Mutha",
+ "key": "mula_mutha_live",
+ "city": "Pune, Maharashtra",
+ "source_folder": "Digital _twin_kml/Mula_mutha_river",
+ "files": {
+  "polygon": "Digital _twin_kml/Mula_mutha_river/Mutha_Mutha_river.kml",
+  "chainage": "Digital _twin_kml/Mula_mutha_river/Mula_mutha_river_chainage.kml",
+  "depth": "Digital _twin_kml/Mula_mutha_river/water_depth_mula_mutha.kml",
+  "locations": "Digital _twin_kml/Mula_mutha_river/locations.xlsx"
+ },
+ "signature": {
+  "polygon": {
+   "file": "Mutha_Mutha_river.kml",
+   "bytes": 8765,
+   "sha1": "632c0596894d0fa97941064ca11e4616e10f98d4"
+  },
+  "chainage": {
+   "file": "Mula_mutha_river_chainage.kml",
+   "bytes": 1260466,
+   "sha1": "2f393df048071d08aff87602d993ae969769f1df"
+  },
+  "depth": {
+   "file": "water_depth_mula_mutha.kml",
+   "bytes": 876157,
+   "sha1": "a8c2ecd6cdb67be4eb0b39c6745ebaf7676efd29"
+  },
+  "locations": {
+   "file": "locations.xlsx",
+   "bytes": 8780,
+   "sha1": "ebd6e41b0b4769ea16d01494f365ed677f8bed64"
+  }
+ },
+ "last_action": "adopted existing build",
+ "built_at_utc": "2026-11-23T13:01:38Z",
+ "notes": []
+}

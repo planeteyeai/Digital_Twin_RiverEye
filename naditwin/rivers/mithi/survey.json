@@ -1,0 +1,9 @@
+{
+ "image_date": "2026-11-12",
+ "depth_min_m": 0.2,
+ "depth_max_m": 5.5,
+ "note": "Sentinel-2 relative depth. Image date: 2026-11-12. Analysis date: 2026-11-16. Water area: 78.4767332185155 ha. Depth range: 0.2-5.5 m. Depth is a relative band-ratio estimate and is not survey-grade bathymetry.",
+ "coverage": 1.0,
+ "decoder": "Pillow",
+ "source": "water-depth KML overlay (light = shallow, dark = deep)"
+}

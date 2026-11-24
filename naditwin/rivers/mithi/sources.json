@@ -1,0 +1,41 @@
+{
+ "river": "Mithi",
+ "key": "mithi",
+ "city": "Mumbai, Maharashtra",
+ "source_folder": "Digital _twin_kml/Mithi_river",
+ "files": {
+  "polygon": "Digital _twin_kml/Mithi_river/Mithi river.kml",
+  "chainage": "Digital _twin_kml/Mithi_river/Mithi_river_chainage.kml",
+  "depth": "Digital _twin_kml/Mithi_river/water_depth_mithi.kml",
+  "locations": "Digital _twin_kml/Mithi_river/locations.xlsx"
+ },
+ "signature": {
+  "polygon": {
+   "file": "Mithi river.kml",
+   "bytes": 16377,
+   "sha1": "4c80668f656397822214a06dde821a5fe202957f"
+  },
+  "chainage": {
+   "file": "Mithi_river_chainage.kml",
+   "bytes": 147950,
+   "sha1": "4f7518835100f7fa82bdd6b0e4ae43529a8511d2"
+  },
+  "depth": {
+   "file": "water_depth_mithi.kml",
+   "bytes": 377890,
+   "sha1": "fc118fdee6e6bd7c0cc0ce4ee4a1dea2a9ced4a8"
+  },
+  "locations": {
+   "file": "locations.xlsx",
+   "bytes": 8802,
+   "sha1": "c3b428036a3caa6cb7021e378b0739c71cf3df2d"
+  }
+ },
+ "last_action": "built",
+ "built_at_utc": "2026-11-23T13:01:39Z",
+ "notes": [
+  "DEM: reach is nearly flat (+0.9 m) — assumed chainage 0 = upstream",
+  "depth sampled at 100% of stations (image 2026-11-12, 0.2-5.5 m)",
+  "7 locations loaded from the locations file"
+ ]
+}

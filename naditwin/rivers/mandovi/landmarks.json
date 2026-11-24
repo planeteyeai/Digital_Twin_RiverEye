@@ -1,0 +1,32 @@
+[
+ {
+  "name": "B-1",
+  "chainage_m": 2650.0,
+  "chainage_km": 2.65,
+  "lon": 73.8502186,
+  "lat": 15.5055449,
+  "type": "bridge",
+  "source": "auto",
+  "snap_distance_m": 0.0
+ },
+ {
+  "name": "B-2",
+  "chainage_m": 6650.0,
+  "chainage_km": 6.65,
+  "lon": 73.8153067,
+  "lat": 15.4996687,
+  "type": "bridge",
+  "source": "auto",
+  "snap_distance_m": 0.0
+ },
+ {
+  "name": "B-3",
+  "chainage_m": 10380.0,
+  "chainage_km": 10.38,
+  "lon": 73.7877674,
+  "lat": 15.4801631,
+  "type": "bridge",
+  "source": "auto",
+  "snap_distance_m": 0.0
+ }
+]

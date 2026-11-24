@@ -1,0 +1,41 @@
+{
+ "river": "Mandovi",
+ "key": "mandovi",
+ "city": "Panaji, Goa",
+ "source_folder": "Digital _twin_kml/Mandovi_river",
+ "files": {
+  "polygon": "Digital _twin_kml/Mandovi_river/Mandovi river.kml",
+  "chainage": "Digital _twin_kml/Mandovi_river/Mandovi_river_chainage.kml",
+  "depth": "Digital _twin_kml/Mandovi_river/water_depth_mandovi.kml",
+  "locations": "Digital _twin_kml/Mandovi_river/locations.xlsx"
+ },
+ "signature": {
+  "polygon": {
+   "file": "Mandovi river.kml",
+   "bytes": 19998,
+   "sha1": "e27e21838eae2ece8a36bb44ad6ae80e501da3d3"
+  },
+  "chainage": {
+   "file": "Mandovi_river_chainage.kml",
+   "bytes": 829936,
+   "sha1": "b664863f42cef58c4e5e70799f71c3e960e54513"
+  },
+  "depth": {
+   "file": "water_depth_mandovi.kml",
+   "bytes": 2342153,
+   "sha1": "b81530cbb8272ed638126f0403e5124c6f6157fd"
+  },
+  "locations": {
+   "file": "locations.xlsx",
+   "bytes": 5684,
+   "sha1": "f5a2f078d08ad36f75e9220dbe3f90f378fc26da"
+  }
+ },
+ "last_action": "locations refreshed",
+ "built_at_utc": "2026-11-24T05:32:32Z",
+ "notes": [
+  "DEM: reach is nearly flat (-0.0 m) — assumed chainage 0 = upstream",
+  "depth sampled at 100% of stations (image 2026-10-30, 0.5-8.0 m)",
+  "13 locations loaded from the locations file"
+ ]
+}

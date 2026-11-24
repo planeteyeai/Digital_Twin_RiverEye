@@ -1,0 +1,21 @@
+# Only needed for the DEV-TOOL scripts (re-extracting geometry/depth from
+# your raw KML/xlsx files):
+#   extract_centerline_mula_mutha.py, extract_centerline_mithi.py,
+#   reverse_and_tag_landmarks_mula_mutha.py, tag_mithi_landmarks.py,
+#   build_depth_profile_mula_mutha.py
+#
+# NOT needed to just run the app: run.py / naditwin/*.py use only the
+# Python standard library (KML upload, depth-image decoding and the live
+# Open-Meteo / GloFAS / DEM feed included). Pillow, if installed, just makes
+# depth-KML decoding faster.
+
+numpy==2.4.4
+scipy==1.17.1
+networkx==3.6.1
+shapely==2.1.2
+pyproj==3.7.2
+pandas==3.0.2
+openpyxl==3.1.5
+
+numpy
+Pillow

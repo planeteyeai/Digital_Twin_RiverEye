@@ -1,0 +1,24 @@
+{
+  "display_name": "Mandovi",
+  "slug": "mandovi",
+  "reach_km": 12.715,
+  "n_stations": 1273,
+  "n_bridges": 3,
+  "n_confluences": 0,
+  "span": "B-1 \u2192 B-3",
+  "landmarks_source": "auto",
+  "width_source": "polygon_perpendicular",
+  "chainage_source": "chainage KML",
+  "chainage_step_m": 10.0,
+  "flow_dir": 1,
+  "has_depth": true,
+  "notes": [
+    "DEM: reach is nearly flat (-0.0 m) \u2014 assumed chainage 0 = upstream",
+    "depth sampled at 100% of stations (image 2026-10-30, 0.5-8.0 m)",
+    "13 locations loaded from the locations file"
+  ],
+  "uploaded": false,
+  "builtin": true,
+  "city": "Panaji, Goa",
+  "source_folder": "Digital _twin_kml/Mandovi_river"
+}

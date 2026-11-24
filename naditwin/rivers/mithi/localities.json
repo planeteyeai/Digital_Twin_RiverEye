@@ -1,0 +1,37 @@
+[
+ {
+  "name": "Kurla",
+  "lon": 72.8791,
+  "lat": 19.0728
+ },
+ {
+  "name": "Kalina",
+  "lon": 72.8474,
+  "lat": 19.073
+ },
+ {
+  "name": "Vakola",
+  "lon": 72.8523,
+  "lat": 19.0762
+ },
+ {
+  "name": "BKC",
+  "lon": 72.8677,
+  "lat": 19.066
+ },
+ {
+  "name": "Dharavi",
+  "lon": 72.8547,
+  "lat": 19.043
+ },
+ {
+  "name": "N\u2013Mahim",
+  "lon": 72.8407,
+  "lat": 19.0453
+ },
+ {
+  "name": "Mahim Creek mouth",
+  "lon": 72.8378,
+  "lat": 19.0385
+ }
+]
