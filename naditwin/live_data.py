@@ -7,7 +7,7 @@ Sources (all free, no API key, https://open-meteo.com):
                    kept for good, only the current year is refreshed (~daily). Missing years are back-filled in
                    the background (backfill_history), paced to stay inside Open-Meteo's free-API rate limits.
   * Flood API      GloFAS v4 river discharge (daily, m3/s) at the UPSTREAM end (boundary inflow) and at the
-                   OUTLET (cross-check), plus the GloFAS ensemble p25/median/p75 for the next 30 days
+                   OUTLET (cross-check), plus the GloFAS ensemble p25/median/p75 for the next 30 days 
                    (-> real forecast uncertainty of the inflow)
   * Elevation API  Copernicus GLO-90 DEM along the centreline and on both banks
                    -> water-surface slope, absolute datum (m WSE), flow direction, bank height per km
